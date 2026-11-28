@@ -218,15 +218,33 @@
                     <button type="submit" class="secondary-cta">Lưu</button>
                   </div>
                 </form>
+                <details id="savings-details" class="savings-details">
+                  <summary>Mục tiêu để dành</summary>
+                  <form id="savings-form" class="savings-form">
+                    <div class="savings-grid">
+                      <label for="income-input">Thu nhập tháng (VND)
+                        <input id="income-input" type="number" min="0" step="1" inputmode="numeric" placeholder="Ví dụ 15000000" />
+                      </label>
+                      <label for="goal-input">Muốn để dành (VND)
+                        <input id="goal-input" type="number" min="0" step="1" inputmode="numeric" placeholder="Ví dụ 3000000" />
+                      </label>
+                    </div>
+                    <button type="submit" class="secondary-cta">Tính hạn mức từ mục tiêu</button>
+                    <p class="savings-hint">Hạn mức = thu nhập − số muốn để dành. App chỉ gợi ý chi tiêu và để dành, không tư vấn đầu tư.</p>
+                  </form>
+                </details>
+                <p id="savings-text" class="savings-text hidden"></p>
                 <div id="budget-progress" class="budget-progress hidden">
                   <div class="budget-bar-bg"><div id="budget-bar-fill" class="budget-bar-fill"></div></div>
                   <p id="budget-progress-text" class="budget-progress-text"></p>
                 </div>
                 <p id="insight-forecast" class="insight-forecast"></p>
                 <ul id="insight-alerts" class="insight-alerts"></ul>
+                <h4 class="insight-subheading">Gợi ý tiết kiệm</h4>
+                <ul id="saving-ideas" class="saving-ideas"></ul>
                 <button id="btn-ai-insight" type="button" class="primary-cta">AI phân tích chi tiêu</button>
                 <ul id="ai-insight-lines" class="ai-insight-lines hidden"></ul>
-                <p id="ai-insight-note" class="ai-insight-note hidden">AI viết nhận xét từ số liệu app tự tính; câu có con số không khớp sổ đã bị loại.</p>
+                <p id="ai-insight-note" class="ai-insight-note hidden">AI viết nhận xét từ số liệu app tự tính; câu có con số không khớp sổ, khuyên cắt khoản cố định hoặc nói về đầu tư, vay đã bị loại.</p>
               </div>
 
               <div class="seg-control" role="tablist" aria-label="Chọn chu kỳ">

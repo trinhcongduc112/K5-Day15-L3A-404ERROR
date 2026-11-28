@@ -33,7 +33,7 @@ SKYBILL_STORAGE_DIR=/tmp/csdl-thu SKYBILL_NO_BROWSER=1 python run.py &
 python codebase/check_flow.py http://127.0.0.1:8080 data/receipts/images/mcocr_public_145013tupze.jpg
 ```
 
-**Phân tích chi tiêu (tính năng phát triển, nhánh `feat/spending-insight`):** tab **Thống kê** có ô đặt hạn mức tháng, thanh % đã dùng, dự báo cuối tháng và cảnh báo; thông báo nổi bật hiện trên lịch và sau mỗi lần Chốt. Mọi con số do code tính (`codebase/insights.py`); nút **AI phân tích chi tiêu** gửi bảng số tổng (không tên cửa hàng, không ảnh) cho model để viết nhận xét và gợi ý tiết kiệm, câu nào có số không khớp sổ bị bỏ. Kiểm không cần mạng: `cd codebase && python check_insights.py`.
+**Phân tích chi tiêu (tính năng phát triển, nhánh `feat/spending-insight`):** tab **Thống kê** có ô đặt hạn mức tháng (hoặc tính từ thu nhập − mục tiêu để dành), thanh % đã dùng, dự báo cuối tháng, cảnh báo và gợi ý tiết kiệm có số cụ thể cho nhóm chi linh hoạt (không tư vấn đầu tư); thông báo nổi bật hiện trên lịch và sau mỗi lần Chốt. Mọi con số do code tính (`codebase/insights.py`); nút **AI phân tích chi tiêu** gửi bảng số tổng (không tên cửa hàng, không ảnh) cho model để viết nhận xét và gợi ý tiết kiệm, câu nào có số không khớp sổ bị bỏ. Kiểm không cần mạng: `cd codebase && python check_insights.py`.
 
 CLI văn bản (`python codebase/app.py --cli`) nhận `Chụp hóa đơn: … | Tổng thanh toán: 55.000đ`, `Sửa tiền: 50.000đ`, `Sửa nhóm: Ăn uống`, `Chốt`, `Ấn xem ngày 2026-11-27`, `Xem tuần 2026-W47`, `So sánh tuần 2026-W47 với kỳ trước`.
 

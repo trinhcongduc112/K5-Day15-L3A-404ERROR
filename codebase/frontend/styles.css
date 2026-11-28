@@ -1714,3 +1714,27 @@ button, input {
 .insight-alerts li span { color: var(--phone-sub); }
 .ai-insight-lines { margin: 10px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 12px; line-height: 1.45; }
 .ai-insight-note { font-size: 10.5px; color: var(--phone-muted); margin-top: 8px; }
+
+/* Mục tiêu để dành + gợi ý tiết kiệm */
+.savings-details { margin-top: 8px; font-size: 12px; }
+.savings-details summary { cursor: pointer; color: var(--accent); font-weight: 700; padding: 4px 0; }
+.savings-form { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+.savings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.savings-grid label { display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: var(--phone-muted); }
+.savings-grid input {
+  min-width: 0;
+  padding: 9px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--phone-border);
+  background: var(--phone-input);
+  color: var(--phone-ink);
+  font-size: 13px;
+  font-weight: 600;
+}
+.savings-hint { font-size: 10.5px; color: var(--phone-muted); line-height: 1.4; }
+.savings-text { font-size: 11.5px; font-weight: 600; margin-top: 8px; padding: 7px 10px; border-radius: 10px; background: var(--phone-input); line-height: 1.45; }
+.savings-text[data-level="ok"] { color: #15803d; }
+.savings-text[data-level="warn"] { color: var(--warn); }
+.savings-text[data-level="danger"] { color: var(--danger); }
+.insight-subheading { font-size: 12.5px; font-weight: 700; margin: 4px 0 6px; }
+.saving-ideas { margin: 0 0 10px; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 11.5px; line-height: 1.45; color: var(--phone-sub); }

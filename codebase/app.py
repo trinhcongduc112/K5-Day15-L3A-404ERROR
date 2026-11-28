@@ -189,7 +189,7 @@ def _CreateHttpHandler(TracingModule, AnswerFunction, ChooseCategory, ReadReceip
                 # Số liệu + cảnh báo do code tính, không gọi model.
                 TodayIso = DocumentOcrModule.normalize_receipt_date((QueryParams.get("date") or [""])[0]) or date.today().isoformat()
                 Facts = InsightsModule.spending_facts(
-                    StorageModule.LoadReceiptRecords("default_user"), TodayIso, InsightsModule.load_budget()
+                    StorageModule.LoadReceiptRecords("default_user"), TodayIso, InsightsModule.load_settings()
                 )
                 SelfInstance._SendJsonResponse(200, Facts)
                 return
@@ -287,18 +287,28 @@ def _CreateHttpHandler(TracingModule, AnswerFunction, ChooseCategory, ReadReceip
 
             if RoutePath == "/api/settings/budget":
                 try:
-                    Budget = InsightsModule.save_budget(RequestBody.get("monthly_budget"))
+                    Settings = InsightsModule.save_budget(RequestBody.get("monthly_budget"))
                 except ValueError as BudgetError:
                     SelfInstance._SendJsonResponse(422, {"error": str(BudgetError)})
                     return
-                SelfInstance._SendJsonResponse(200, {"monthly_budget": Budget})
+                SelfInstance._SendJsonResponse(200, Settings)
+                return
+
+            if RoutePath == "/api/settings/savings":
+                # Mục tiêu để dành: hạn mức = thu nhập − mục tiêu. Không có tư vấn đầu tư.
+                try:
+                    Settings = InsightsModule.save_savings(RequestBody.get("monthly_income"), RequestBody.get("savings_goal"))
+                except ValueError as SavingsError:
+                    SelfInstance._SendJsonResponse(422, {"error": str(SavingsError)})
+                    return
+                SelfInstance._SendJsonResponse(200, Settings)
                 return
 
             if RoutePath == "/api/insights/ai":
                 # AI chỉ viết nhận xét từ bảng số code đã tính; dòng có số lạ bị bỏ.
                 TodayIso = DocumentOcrModule.normalize_receipt_date(str(RequestBody.get("date") or "")) or date.today().isoformat()
                 Facts = InsightsModule.spending_facts(
-                    StorageModule.LoadReceiptRecords("default_user"), TodayIso, InsightsModule.load_budget()
+                    StorageModule.LoadReceiptRecords("default_user"), TodayIso, InsightsModule.load_settings()
                 )
                 TracingModule.begin("web-insight")
                 try:

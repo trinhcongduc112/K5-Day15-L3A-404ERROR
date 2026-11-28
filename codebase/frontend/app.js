@@ -833,7 +833,20 @@
     $("insight-month-label").textContent = `tháng ${f.month}`;
     $("insight-today-total").textContent = `Hôm nay: ${formatVnd(f.today_total)}`;
     const b = f.budget;
+    const st = f.settings || {};
     if (document.activeElement !== $("budget-input")) $("budget-input").value = b ? b.limit : "";
+    if (document.activeElement !== $("income-input")) $("income-input").value = st.monthly_income || "";
+    if (document.activeElement !== $("goal-input")) $("goal-input").value = st.savings_goal || "";
+    const sv = f.savings;
+    const svText = $("savings-text");
+    svText.classList.toggle("hidden", !sv);
+    if (sv) {
+      svText.textContent = sv.goal
+        ? `Mục tiêu để dành ${formatVnd(sv.goal)}/tháng · dự kiến để dành được ${formatVnd(sv.projected)}` +
+          (sv.gap ? ` · còn thiếu ${formatVnd(sv.gap)}` : " · đạt mục tiêu")
+        : `Dự kiến để dành được ${formatVnd(sv.projected)} (thu nhập − dự báo chi cuối tháng)`;
+      svText.dataset.level = sv.projected < 0 ? "danger" : sv.gap ? "warn" : "ok";
+    }
     $("budget-progress").classList.toggle("hidden", !b);
     if (b) {
       const fill = $("budget-bar-fill");
@@ -843,6 +856,7 @@
         ? `Đã chi ${formatVnd(f.month_total)} / ${formatVnd(b.limit)} (${String(b.used_pct).replace(".", ",")}%) · còn ${formatVnd(b.remaining)}` +
           (b.safe_per_day ? ` · nên chi ≤ ${formatVnd(b.safe_per_day)}/ngày` : "")
         : `Đã chi ${formatVnd(f.month_total)} / ${formatVnd(b.limit)} · vượt ${formatVnd(-b.remaining)}`;
+      if (sv && sv.goal) $("budget-progress-text").textContent += " · hạn mức = thu nhập − mục tiêu để dành";
     }
     $("insight-forecast").textContent =
       `Trung bình ${formatVnd(f.daily_average)}/ngày · dự báo cuối tháng ${formatVnd(f.forecast_month_end)} · cùng kỳ tháng trước ${formatVnd(f.prev_same_span_total)}`;
@@ -860,6 +874,44 @@
       list.appendChild(li);
     });
     if (!(f.alerts || []).length) list.innerHTML = `<li data-level="ok"><strong>Chi tiêu ổn</strong><span>Chưa có cảnh báo nào trong tháng này.</span></li>`;
+
+    const ideas = $("saving-ideas");
+    ideas.innerHTML = "";
+    (f.saving_ideas || []).forEach((idea) => {
+      const li = document.createElement("li");
+      li.textContent = idea.text;
+      ideas.appendChild(li);
+    });
+    if (!(f.saving_ideas || []).length) ideas.innerHTML = "<li>Chưa có nhóm chi linh hoạt nào tăng hoặc chi thường xuyên để gợi ý.</li>";
+  }
+
+  async function saveSavings(e) {
+    e.preventDefault();
+    const toInt = (id) => ($(id).value.trim() === "" ? 0 : Number($(id).value));
+    const income = toInt("income-input");
+    const goal = toInt("goal-input");
+    if (!Number.isInteger(income) || !Number.isInteger(goal) || income < 0 || goal < 0) {
+      showToast("Thu nhập và số muốn để dành phải là số nguyên VND không âm");
+      return;
+    }
+    try {
+      const res = await fetch("/api/settings/savings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ monthly_income: income, savings_goal: goal }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        showToast(data.error || "Chưa lưu được mục tiêu để dành");
+        return;
+      }
+      showToast(income ? `Mục tiêu để dành ${formatVnd(goal)} · hạn mức tháng ${formatVnd(data.monthly_budget)}` : "Đã tắt mục tiêu để dành");
+    } catch (_) {
+      showToast("Chưa kết nối được máy chủ");
+      return;
+    }
+    document.activeElement?.blur();
+    await refreshInsights({ notify: true });
   }
 
   async function saveBudget(e) {
@@ -1161,6 +1213,7 @@
     $("btn-retake-reread").addEventListener("click", () => showSheetStep("camera"));
     $("btn-manual-reread").addEventListener("click", openManualDraft);
     $("budget-form").addEventListener("submit", saveBudget);
+    $("savings-form").addEventListener("submit", saveSavings);
     $("btn-ai-insight").addEventListener("click", runAiInsight);
     $("insight-banner").addEventListener("click", () => switchScreen("analytics"));
     $("btn-retake-from-draft").addEventListener("click", () => showSheetStep("camera"));
