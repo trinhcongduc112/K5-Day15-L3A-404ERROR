@@ -126,13 +126,21 @@ flowchart TD
 
 ## §9. Rủi ro & an toàn
 - Dữ liệu: đã ẩn danh gì, không thu gì, không đưa gì vào model gói miễn phí:
+  - Ảnh hóa đơn đọc bằng OCR cục bộ ONNX trên máy chủ của app. Chỉ khi OCR chưa ra số thực trả, ảnh (thu nhỏ ≤1600px) mới được gửi tới OpenAI `gpt-5.4-nano` qua API trả phí theo token, không qua gói chat miễn phí. Trên 40 ảnh mẫu, phần gửi đi tốn 5.415 token vào (`eval/image-check-after.jsonl`).
+  - Ảnh có OTP, mật khẩu, mã PIN hoặc số thẻ (kiểm Luhn) bị chặn ngay sau OCR, không gửi model, không lưu (`receipt_has_sensitive_text`).
+  - Khảo sát 24 người đã bỏ cột SĐT/liên hệ (`evidence/survey/results.csv`). Ảnh mẫu là bộ MC-OCR công khai; sổ 85 khoản là giả lập. Không thu vị trí, danh bạ hay tài khoản ngân hàng.
 - AI **không được** làm gì kể cả khi người dùng yêu cầu:
+  - Ghi khoản chi vào sổ khi người dùng chưa bấm **Chốt**. Model chỉ đọc ảnh và chọn nhóm trong danh sách code đưa ra; ghi sổ và cộng tổng do code làm.
+  - Đoán số tiền không nhìn thấy trên ảnh, hoặc ghi khống, thao túng số liệu.
+  - Xử lý OTP, mật khẩu, số thẻ; tư vấn đầu tư; đọc hay xuất sổ của người khác. Cả 4 loại bị từ chối trước khi gọi model (bộ câu thử `tu_choi` 4/4 đạt ở cả 2 lượt).
 - Ai có thể bị hại nếu AI sai, và nhóm chặn thế nào:
+  - **Người dùng** bị lệch sổ nếu số thực trả hoặc ngày đọc sai, bị cộng trùng nếu chụp lại cùng hóa đơn. Chặn: số model đọc phải trùng tổng OCR hoặc có trong chữ OCR của chính ảnh, lệch thì **Cần đọc lại**; ảnh mờ/lóa không gọi model; ngày sau ngày chụp → Cần đọc lại; không đọc được ngày thì dùng ngày chụp và ghi rõ "(ngày chụp)"; sửa được tiền và nhóm trước khi Chốt; mã lượt chụp chống cộng trùng (`codebase/check_flow.py` đạt cả 3 ca).
+  - Rủi ro còn lại: lệch vài chữ số vẫn có thể lọt (`niqeq` đọc 60.582, nhãn ghi 60.500), nên bản xem nhanh luôn hiện số để người dùng nhìn lại trước khi Chốt.
 
 ## §10. Phân công & changelog
 - **Cặp sản phẩm (dự kiến):** Vũ phụ trách nhận ảnh, nối model và giao diện lịch. Đức viết spec, code kiểm dữ liệu, lưu và tổng hợp ngày/tháng.
 - **Cặp bằng chứng và kiểm thử (dự kiến):** Đạt dựng hóa đơn giả lập và benchmark. Kiệt phỏng vấn, tổng hợp bằng chứng và viết tiêu chí chấm.
-- Dùng AI vào việc gì (2–3 dòng; chi tiết `docs/ai-usage.md`):
+- Dùng AI vào việc gì (2–3 dòng; chi tiết `docs/ai-usage.md`): Trong sản phẩm, `gpt-5.4-nano` chọn nhóm chi trong danh sách có căn cứ và đọc lại ảnh khi OCR cục bộ chưa ra tổng. Trong lúc làm, nhóm dùng coding agent (Claude Code) để viết và rà code, chạy phép đo 40 ảnh, soạn nháp tài liệu và slide; mọi số liệu lấy từ file đo trong repo, người trong nhóm duyệt trước khi commit.
 - Nhật ký thay đổi — **mọi thay đổi sau CP2 19:30 Thứ Sáu 27/11 phải có dòng ở đây**:
 
 **CP2 → CP4** (vd thu hẹp lát cắt, hỏi thêm người dùng, lần cải tiến trước lượt 2)

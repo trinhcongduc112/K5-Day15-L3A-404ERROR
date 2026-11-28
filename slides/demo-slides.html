@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>SkyBill · Nhóm 404ERROR · CP4</title>
+<!-- Nguồn của demo-slides.pdf. Xuất lại: google-chrome --headless --no-pdf-header-footer --print-to-pdf=demo-slides.pdf slides/demo-slides.html -->
+<style>
+  @page { size: 1280px 720px; margin: 0; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: "Inter", "Segoe UI", "Noto Sans", Arial, sans-serif; color: #1c2430; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .slide { width: 1280px; height: 720px; padding: 56px 72px 44px; position: relative; page-break-after: always; overflow: hidden; background: #fff; display: flex; flex-direction: column; }
+  .slide:last-child { page-break-after: auto; }
+  .kicker { font-size: 15px; letter-spacing: .08em; text-transform: uppercase; color: #2f6fde; font-weight: 700; margin-bottom: 10px; }
+  h1 { font-size: 40px; line-height: 1.15; margin: 0 0 22px; font-weight: 750; }
+  h2 { font-size: 21px; margin: 0 0 10px; font-weight: 700; }
+  p, li { font-size: 20px; line-height: 1.45; }
+  ul { margin: 0; padding-left: 24px; }
+  li { margin-bottom: 8px; }
+  .src { position: absolute; left: 72px; right: 72px; bottom: 22px; font-size: 13px; color: #6b7685; border-top: 1px solid #e3e7ed; padding-top: 8px; }
+  .page { position: absolute; right: 72px; top: 28px; font-size: 13px; color: #9aa3af; }
+  .grid { display: grid; gap: 22px; }
+  .g2 { grid-template-columns: 1fr 1fr; }
+  .g3 { grid-template-columns: repeat(3, 1fr); }
+  .g4 { grid-template-columns: repeat(4, 1fr); }
+  .card { border: 1px solid #e3e7ed; border-radius: 12px; padding: 18px 20px; background: #f8fafc; }
+  .stat { font-size: 44px; font-weight: 800; color: #2f6fde; line-height: 1.05; }
+  .stat small { font-size: 20px; font-weight: 600; color: #4b5563; }
+  .label { font-size: 17px; color: #374151; margin-top: 6px; line-height: 1.35; }
+  .quote { font-size: 23px; line-height: 1.4; font-style: italic; border-left: 5px solid #2f6fde; padding: 6px 0 6px 18px; margin: 0; color: #253041; }
+  table { border-collapse: collapse; width: 100%; font-size: 18px; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid #e3e7ed; vertical-align: top; }
+  th { background: #eef3fb; font-weight: 700; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .pick td { background: #eaf6ee; font-weight: 600; }
+  .flow { display: flex; align-items: stretch; gap: 10px; margin: 6px 0 22px; }
+  .step { flex: 1; border-radius: 10px; padding: 12px 12px; font-size: 16px; line-height: 1.3; background: #eef3fb; border: 1px solid #cfdcf3; }
+  .step b { display: block; font-size: 17px; margin-bottom: 4px; }
+  .step.ai { background: #fff4e5; border-color: #f3d3a3; }
+  .step.human { background: #eaf6ee; border-color: #b9e0c5; }
+  .arrow { align-self: center; color: #9aa3af; font-size: 22px; }
+  .ok { color: #1f8a4c; font-weight: 700; }
+  .warn { color: #b45309; font-weight: 700; }
+  .big { font-size: 64px; font-weight: 850; color: #1f8a4c; line-height: 1; }
+  code { font-family: "JetBrains Mono", Consolas, monospace; font-size: .88em; background: #eef1f5; padding: 1px 5px; border-radius: 4px; }
+  .title-slide { justify-content: center; background: linear-gradient(135deg, #f3f7fe 0%, #ffffff 60%); }
+  .title-slide h1 { font-size: 54px; margin-bottom: 14px; }
+  .muted { color: #5b6573; }
+</style>
+</head>
+<body>
+
+<!-- 1 · Người dùng & pain -->
+<section class="slide">
+  <div class="page">1 / 8 · SkyBill · Nhóm 404ERROR</div>
+  <div class="kicker">Người dùng &amp; pain</div>
+  <h1>Người tự ghi chi tiêu nhận hóa đơn mỗi ngày, nhưng bỏ dở vì phải nhập tay</h1>
+  <div class="grid g4" style="margin-bottom:26px">
+    <div class="card"><div class="stat">70,8%</div><div class="label">chi rải rác, khó gom theo từng ngày (17/24)</div></div>
+    <div class="card"><div class="stat">66,7%</div><div class="label">bỏ luôn hóa đơn, không giữ lại (16/24)</div></div>
+    <div class="card"><div class="stat">58,3%</div><div class="label">bỏ app chi tiêu vì quên nhập lúc mua (14/24)</div></div>
+    <div class="card"><div class="stat">50,0%</div><div class="label">ngại nhập tay từng dòng hóa đơn (12/24)</div></div>
+  </div>
+  <p class="quote">“Mình hay quên nhập ngay lúc mua, tối về không nhớ hết các khoản tiền mặt nên dễ bỏ dở sau vài ngày.”</p>
+  <p class="muted" style="margin-top:18px">75% người được hỏi có từ 10 lượt chi/tuần trở lên (18/24). Review app công khai: 12/500 nêu khoản bị ghi thiếu, trùng hoặc sai tổng.</p>
+  <div class="src">Nguồn: khảo sát 24 người, 27/11/2026 (<code>evidence/survey/results.csv</code>) · 500 review công khai (<code>evidence/data-mining.md</code>) · tổng hợp <code>evidence/summary.md</code></div>
+</section>
+
+<!-- 2 · Vì sao chọn -->
+<section class="slide">
+  <div class="page">2 / 8</div>
+  <div class="kicker">Vì sao chọn bài này</div>
+  <h1>Chụp hóa đơn là chỗ tốn thời gian nhất; lịch và tổng hợp tháng dùng lại dữ liệu đó</h1>
+  <table>
+    <tr><th>Hướng (30 người thử, 1 tháng)</th><th class="num">Lần / người / tháng</th><th>Mỗi lần tiết kiệm</th><th class="num">Impact / tháng</th><th>Quyết định</th></tr>
+    <tr class="pick"><td>Tạo khoản chi từ ảnh, một lần Chốt</td><td class="num">12 hóa đơn</td><td>35 giây (60 → 25 giây)</td><td class="num">210 phút</td><td>Chọn làm lát cắt</td></tr>
+    <tr><td>Tra khoản chi trên lịch</td><td class="num">8 lượt</td><td>20 giây</td><td class="num">80 phút</td><td>Giữ làm đầu ra</td></tr>
+    <tr><td>Tổng hợp chi tiêu tháng</td><td class="num">1 lượt</td><td>4 phút</td><td class="num">120 phút</td><td>Tính từ khoản đã lưu</td></tr>
+  </table>
+  <div class="grid g2" style="margin-top:26px">
+    <div class="card"><h2>Học từ app có sẵn</h2><p style="margin:0">MISA Sổ Thu Chi, Money Lover đã có chụp hóa đơn. Điều nên tránh: <b>tự lưu khi đọc sai</b> làm lệch tổng.</p></div>
+    <div class="card"><h2>Mình khác</h2><p style="margin:0">Không chắc thì báo <b>Cần đọc lại</b>, chỉ ghi khi người dùng bấm <b>Chốt</b>, chụp lại cùng ảnh không cộng trùng.</p></div>
+  </div>
+  <div class="src">Nguồn: <code>spec.md</code> §2–§3. Số impact là <b>tự ước tính</b> cho kịch bản 30 người thử, chưa đo với người dùng thật.</div>
+</section>
+
+<!-- 3 · Giải pháp -->
+<section class="slide">
+  <div class="page">3 / 8</div>
+  <div class="kicker">Giải pháp</div>
+  <h1>Chụp một hóa đơn → AI chọn nhóm chi → bấm Chốt là có khoản chi trên lịch</h1>
+  <div class="flow">
+    <div class="step"><b>1 · Chụp</b>Kiểm ảnh mờ/lóa. Mờ → Cần đọc lại, không gọi model</div>
+    <div class="arrow">→</div>
+    <div class="step"><b>2 · OCR cục bộ</b>ONNX PP-OCRv3 + VieSVTR v7 đọc ngày, tổng thực trả</div>
+    <div class="arrow">→</div>
+    <div class="step ai"><b>3 · Model (khi cần)</b><code>gpt-5.4-nano</code> đọc lại ảnh nếu OCR chưa ra tổng; chọn nhóm chi</div>
+    <div class="arrow">→</div>
+    <div class="step"><b>4 · Code kiểm</b>Số model đọc phải có trên chữ OCR của ảnh, lệch → Cần đọc lại</div>
+    <div class="arrow">→</div>
+    <div class="step human"><b>5 · Người dùng Chốt</b>Xem nhanh, sửa tiền/nhóm, Chốt → lưu vào lịch</div>
+  </div>
+  <div class="grid g2">
+    <div class="card"><h2>AI tự làm</h2><ul><li>Đọc lại ảnh khó mà OCR chưa ra tổng</li><li>Chọn nhóm chi trong danh sách code đưa ra</li></ul></div>
+    <div class="card"><h2>Không giao cho AI — vì sao</h2><ul><li>Ghi sổ, cộng tổng: code làm, chỉ sau khi Chốt</li><li>Số tiền sai làm hỏng cả sổ, nên luôn có người nhìn trước khi lưu</li></ul></div>
+  </div>
+  <div class="src">Nguồn: <code>spec.md</code> §4 · <code>codebase/agent.py</code> (<code>read_receipt_image</code>, <code>choose_category</code>) · <code>codebase/document_ocr.py</code></div>
+</section>
+
+<!-- 4 · Demo -->
+<section class="slide">
+  <div class="page">4 / 8</div>
+  <div class="kicker">Demo live</div>
+  <h1>Một ca thường, một ca khó: kết quả kiểm trên app thật</h1>
+  <div class="grid g2">
+    <div class="card">
+      <h2>Ca thường · <code>mcocr_public_145013tupze.jpg</code></h2>
+      <ul>
+        <li>Xem nhanh: MINIMART ANAN · <b>200.000đ</b> · ngày 13/08/2020 (in trên hóa đơn)</li>
+        <li>Bấm Chốt → tổng ngày <b>0 → 200.000đ</b></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>Ca khó · ảnh mờ và chụp trùng</h2>
+      <ul>
+        <li>Cùng ảnh làm mờ → <span class="warn">Cần đọc lại</span>, không tạo bản nháp, tổng sổ giữ nguyên</li>
+        <li>Chụp lại ảnh đã Chốt → cảnh báo trùng, Chốt lần 2 <b>không cộng thêm</b></li>
+      </ul>
+    </div>
+  </div>
+  <p style="margin-top:24px">Chạy: <code>docker compose up --build</code> → <code>http://localhost:8080</code> · Mạng hoặc API hỏng → phát <b>video demo dự phòng</b> (link trong form nộp).</p>
+  <div class="src">Nguồn: <code>codebase/check_flow.py</code> chạy trên commit <code>c797c7c</code>, 28/11/2026 — “ĐẠT cả 3 ca”.</div>
+</section>
+
+<!-- 5 · Đánh giá -->
+<section class="slide">
+  <div class="page">5 / 8</div>
+  <div class="kicker">Đánh giá thế nào</div>
+  <h1>20/20 câu thử ở cả 2 lượt; đọc ảnh đúng từ 25/40 lên 35/40</h1>
+  <div class="grid g2">
+    <div>
+      <table>
+        <tr><th>Lượt</th><th>Run ID</th><th class="num">Đạt</th></tr>
+        <tr><td>1</td><td><code>run-1@20261128-095527</code></td><td class="num ok">20/20</td></tr>
+        <tr><td>2</td><td><code>run-2@20261128-051909</code></td><td class="num ok">20/20</td></tr>
+      </table>
+      <p style="font-size:17px;margin-top:12px">20 câu: 8 thường · 8 khó · 4 từ chối (7 từ review thật). 4 metric: số tiền &amp; ngày · tổng &amp; chi tiết · không ghi khi thiếu căn cứ · đúng phạm vi. Chuẩn đạt ≥85% (17/20) và 100% câu từ chối. Model <code>gpt-5.4-nano-2026-03-17</code>.</p>
+    </div>
+    <div>
+      <table>
+        <tr><th>40 ảnh MC-OCR có nhãn</th><th class="num">Trước</th><th class="num">Sau</th></tr>
+        <tr><td>Đọc đúng tổng</td><td class="num">25</td><td class="num ok">35</td></tr>
+        <tr><td>Đọc sai</td><td class="num">2</td><td class="num">1</td></tr>
+        <tr><td>Cần đọc lại</td><td class="num">13</td><td class="num">3</td></tr>
+        <tr><td>Token model đọc ảnh</td><td class="num">44.816</td><td class="num">5.415</td></tr>
+      </table>
+      <p style="font-size:17px;margin-top:12px">Lỗi chính lượt 1: <b>Cần đọc lại oan</b> (11/40 ảnh có tổng rõ). Cải tiến: OCR cục bộ ONNX thay Tesseract, model chỉ gọi khi cần. 0 ảnh tệ đi. Còn sai: <code>niqeq</code> đọc 60.582, nhãn 60.500.</p>
+    </div>
+  </div>
+  <div class="src">Nguồn: <code>eval/report.md</code>, <code>eval/README.md</code>, <code>eval/run-1.csv</code>, <code>eval/run-2.csv</code>, <code>eval/image-check-before.jsonl</code> → <code>eval/image-check-after.jsonl</code> (đo ngoài bộ 20 câu).</div>
+</section>
+
+<!-- 6 · Chi phí -->
+<section class="slide">
+  <div class="page">6 / 8</div>
+  <div class="kicker">Chi phí khi dùng thật</div>
+  <h1>≈ 34 ₫ / người / tháng cho cả hỏi đáp và đọc ảnh</h1>
+  <div class="grid g3" style="margin-bottom:22px">
+    <div class="card"><div class="stat">$0.000034</div><div class="label">/ task thành công (chữ, tỉ lệ đạt 20/20 của lượt 2) · <code>gpt-5.4-nano</code></div></div>
+    <div class="card"><div class="stat">$0.000036</div><div class="label">/ hóa đơn đọc thành công (÷ 87,5% = 35/40 ảnh) · <code>gpt-5.4-nano</code></div></div>
+    <div class="card"><div class="stat">≈ 125 ₫</div><div class="label">/ người / tháng nếu đổi sang <code>gpt-5.4-mini</code> (mức mạnh hơn)</div></div>
+  </div>
+  <table>
+    <tr><th>Kịch bản (chữ + ảnh, <code>gpt-5.4-nano</code>)</th><th class="num">Thấp · 30 người</th><th class="num">Cơ sở · 100 người</th><th class="num">Cao · 300 người</th></tr>
+    <tr><td>Chi phí / tháng</td><td class="num">$0.040 (≈ 1.007 ₫)</td><td class="num">$0.132 (≈ 3.356 ₫)</td><td class="num">$0.396 (≈ 10.068 ₫)</td></tr>
+  </table>
+  <p style="margin-top:18px">So với impact: mỗi người dùng tiết kiệm khoảng <b>7 phút/tháng</b> ở lát cắt chụp hóa đơn (210 phút / 30 người, tự ước tính) → chi phí model không đáng kể, đáng làm.</p>
+  <div class="src">Nguồn: <code>cost/cost-estimate.md</code>, <code>cost/simulate-1.csv</code> (50 phiên, <code>simulate-1@20261128-123906</code>, <code>--rate-from eval/run-2.csv</code>), <code>cost/personas.yaml</code>. Số người 100/300 và tỷ giá 25.400 ₫/USD là tự ước tính.</div>
+</section>
+
+<!-- 7 · Kết luận -->
+<section class="slide">
+  <div class="page">7 / 8</div>
+  <div class="kicker">Kết luận</div>
+  <h1>Đề xuất: GO cho nhóm thử nhỏ, giữ bước Chốt thủ công</h1>
+  <div class="grid g3">
+    <div class="card"><h2>Pain có thật</h2><p style="margin:0">70,8% chi rải rác khó gom theo ngày; 58,3% bỏ app vì quên nhập (khảo sát 24 người) — trang 1</p></div>
+    <div class="card"><h2>Chạy được, an toàn</h2><p style="margin:0">20/20 câu thử ở 2 lượt; ảnh đúng 35/40, chỉ 1 sai; không ghi khi chưa Chốt, 4/4 câu từ chối đúng — trang 5</p></div>
+    <div class="card"><h2>Rẻ</h2><p style="margin:0">≈ 34 ₫/người/tháng với <code>gpt-5.4-nano</code>; 100 người ≈ 3.356 ₫/tháng — trang 6</p></div>
+  </div>
+  <p style="margin-top:26px"><b>Chưa chắc:</b> impact 210 phút/tháng là tự ước tính, chưa đo thời gian với người dùng thật; ảnh mẫu là bộ công khai, chưa phải ảnh người dùng chụp.</p>
+  <div class="src">Nguồn: trang 1, 5, 6 · <code>spec.md</code> §2, §7, §8.</div>
+</section>
+
+<!-- 8 · Thêm 1 tuần -->
+<section class="slide">
+  <div class="page">8 / 8</div>
+  <div class="kicker">Nếu có thêm 1 tuần</div>
+  <h1>Ba việc, theo lỗi còn lại</h1>
+  <div class="grid g3">
+    <div class="card"><h2>1 · Bắt lệch chữ số lẻ</h2><p style="margin:0">Đối chiếu tổng các món với tổng in trên hóa đơn để cảnh báo ca như <code>niqeq</code> (60.582 vs 60.500) thay vì cho Xem nhanh im lặng.</p></div>
+    <div class="card"><h2>2 · Ảnh khó còn lại</h2><p style="margin:0">Ảnh xoay ngang và năm đọc sai (<code>wbtei</code>, <code>uzdqt</code>): Vũ đã thử tự xoay ±90° (PR #9), cần đo lại có model và chấm cả ngày, không chỉ tổng tiền.</p></div>
+    <div class="card"><h2>3 · Đo impact thật</h2><p style="margin:0">Cho 2–3 người ngoài nhóm ghi cùng hóa đơn bằng tay và bằng app, bấm giờ để thay số 35 giây tự ước tính.</p></div>
+  </div>
+  <div class="src">Nguồn: <code>eval/report.md</code> §4 · PR #9 · <code>validation/log.md</code>.</div>
+</section>
+
+</body>
+</html>
