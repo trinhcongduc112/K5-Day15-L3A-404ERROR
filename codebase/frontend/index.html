@@ -150,6 +150,15 @@
                 </div>
               </div>
 
+              <!-- Thông báo chi tiêu (cảnh báo hạn mức / biến động) — chạm để xem phân tích -->
+              <button id="insight-banner" type="button" class="insight-banner hidden">
+                <span id="insight-banner-icon" class="insight-banner-icon" aria-hidden="true">!</span>
+                <span class="insight-banner-body">
+                  <strong id="insight-banner-title">—</strong>
+                  <span id="insight-banner-text">—</span>
+                </span>
+              </button>
+
               <!-- Lưới lịch 7 cột -->
               <div class="calendar-card">
                 <div class="weekdays-row" aria-hidden="true">
@@ -194,6 +203,30 @@
                   <h2 class="app-title">Thống kê kỳ</h2>
                 </div>
                 <button type="button" class="icon-circle-btn guide-trigger" aria-label="Hướng dẫn nhanh" title="Hướng dẫn nhanh">?</button>
+              </div>
+
+              <!-- Hạn mức tháng + cảnh báo (code tính) + nhận xét AI -->
+              <div class="analytics-card insight-card">
+                <div class="insight-head">
+                  <h3 class="card-heading">Hạn mức &amp; phân tích <span id="insight-month-label"></span></h3>
+                  <span class="insight-today" id="insight-today-total">Hôm nay: 0 ₫</span>
+                </div>
+                <form id="budget-form" class="budget-form">
+                  <label for="budget-input">Hạn mức tháng (VND)</label>
+                  <div class="budget-row">
+                    <input id="budget-input" type="number" min="0" step="1" inputmode="numeric" placeholder="Ví dụ 9000000" />
+                    <button type="submit" class="secondary-cta">Lưu</button>
+                  </div>
+                </form>
+                <div id="budget-progress" class="budget-progress hidden">
+                  <div class="budget-bar-bg"><div id="budget-bar-fill" class="budget-bar-fill"></div></div>
+                  <p id="budget-progress-text" class="budget-progress-text"></p>
+                </div>
+                <p id="insight-forecast" class="insight-forecast"></p>
+                <ul id="insight-alerts" class="insight-alerts"></ul>
+                <button id="btn-ai-insight" type="button" class="primary-cta">AI phân tích chi tiêu</button>
+                <ul id="ai-insight-lines" class="ai-insight-lines hidden"></ul>
+                <p id="ai-insight-note" class="ai-insight-note hidden">AI viết nhận xét từ số liệu app tự tính; câu có con số không khớp sổ đã bị loại.</p>
               </div>
 
               <div class="seg-control" role="tablist" aria-label="Chọn chu kỳ">

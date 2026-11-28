@@ -31,6 +31,7 @@ if BaseCodeDirectory not in sys.path:
 import document_ocr as DocumentOcrModule
 import storage as StorageModule
 import tools as ReceiptTools
+import insights as InsightsModule
 
 
 def _WhereFailed(ErrorObject):
@@ -184,6 +185,15 @@ def _CreateHttpHandler(TracingModule, AnswerFunction, ChooseCategory, ReadReceip
                 SelfInstance._SendJsonResponse(200, DaySummary)
                 return
 
+            if RoutePath == "/api/insights":
+                # Số liệu + cảnh báo do code tính, không gọi model.
+                TodayIso = DocumentOcrModule.normalize_receipt_date((QueryParams.get("date") or [""])[0]) or date.today().isoformat()
+                Facts = InsightsModule.spending_facts(
+                    StorageModule.LoadReceiptRecords("default_user"), TodayIso, InsightsModule.load_budget()
+                )
+                SelfInstance._SendJsonResponse(200, Facts)
+                return
+
             if RoutePath == "/api/summary/compare":
                 PeriodType = (QueryParams.get("period") or ["month"])[0]
                 CurrentKey = (QueryParams.get("current") or [""])[0]
@@ -273,6 +283,32 @@ def _CreateHttpHandler(TracingModule, AnswerFunction, ChooseCategory, ReadReceip
             if RoutePath == "/api/receipts/reset-demo":
                 FreshList = StorageModule.ResetDemoReceiptRecords()
                 SelfInstance._SendJsonResponse(200, {"receipts": FreshList})
+                return
+
+            if RoutePath == "/api/settings/budget":
+                try:
+                    Budget = InsightsModule.save_budget(RequestBody.get("monthly_budget"))
+                except ValueError as BudgetError:
+                    SelfInstance._SendJsonResponse(422, {"error": str(BudgetError)})
+                    return
+                SelfInstance._SendJsonResponse(200, {"monthly_budget": Budget})
+                return
+
+            if RoutePath == "/api/insights/ai":
+                # AI chỉ viết nhận xét từ bảng số code đã tính; dòng có số lạ bị bỏ.
+                TodayIso = DocumentOcrModule.normalize_receipt_date(str(RequestBody.get("date") or "")) or date.today().isoformat()
+                Facts = InsightsModule.spending_facts(
+                    StorageModule.LoadReceiptRecords("default_user"), TodayIso, InsightsModule.load_budget()
+                )
+                TracingModule.begin("web-insight")
+                try:
+                    Commentary = InsightsModule.ai_insights(Facts)
+                except Exception as InsightError:
+                    TracingModule.end()
+                    SelfInstance._SendJsonResponse(502, {"error": "Chưa gọi được AI: %s" % InsightError})
+                    return
+                TracingModule.end()
+                SelfInstance._SendJsonResponse(200, Commentary)
                 return
 
             if RoutePath == "/api/analyze":

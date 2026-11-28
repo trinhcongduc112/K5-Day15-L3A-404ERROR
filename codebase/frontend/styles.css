@@ -1631,3 +1631,86 @@ button, input {
 #step-reread .sheet-actions-row:not(:has(> .hidden)) {
   grid-template-columns: 1fr 1fr;
 }
+
+/* =========================================================================
+   Phân tích chi tiêu: thông báo trên lịch, hạn mức tháng, cảnh báo, nhận xét AI
+   ========================================================================= */
+.insight-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  border-radius: 14px;
+  border: 1px solid var(--accent-soft);
+  background: var(--accent-tint);
+  color: var(--phone-ink);
+  cursor: pointer;
+  font: inherit;
+}
+.insight-banner[data-level="warn"] { border-color: var(--warn); background: var(--warn-soft); }
+.insight-banner[data-level="danger"] { border-color: var(--danger); background: var(--danger-soft); }
+.insight-banner-icon {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: #ffffff;
+  background: var(--accent);
+}
+.insight-banner[data-level="warn"] .insight-banner-icon { background: var(--warn); }
+.insight-banner[data-level="danger"] .insight-banner-icon { background: var(--danger); }
+.insight-banner-body { display: flex; flex-direction: column; gap: 2px; font-size: 12px; line-height: 1.4; }
+.insight-banner-body strong { font-size: 12.5px; }
+.insight-banner-body span { color: var(--phone-sub); }
+[data-theme="dark"] .insight-banner[data-level="warn"],
+[data-theme="dark"] .insight-banner[data-level="danger"] { color: #0f172a; }
+[data-theme="dark"] .insight-banner[data-level="warn"] .insight-banner-body span,
+[data-theme="dark"] .insight-banner[data-level="danger"] .insight-banner-body span { color: #334155; }
+
+.insight-card { margin-top: 4px; margin-bottom: 10px; }
+.insight-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.insight-today { font-size: 12px; font-weight: 700; color: var(--accent); white-space: nowrap; }
+.budget-form label { display: block; font-size: 11.5px; color: var(--phone-muted); margin-bottom: 4px; }
+.budget-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+.budget-row input {
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--phone-border);
+  background: var(--phone-input);
+  color: var(--phone-ink);
+  font-size: 14px;
+  font-weight: 600;
+}
+.budget-row .secondary-cta { padding: 10px 16px; }
+.budget-progress { margin-top: 10px; }
+.budget-bar-bg { height: 8px; border-radius: 99px; background: var(--phone-input); overflow: hidden; }
+.budget-bar-fill { height: 100%; border-radius: 99px; background: var(--accent); transition: width 0.3s ease; }
+.budget-bar-fill[data-level="warn"] { background: var(--warn); }
+.budget-bar-fill[data-level="danger"] { background: var(--danger); }
+.budget-progress-text, .insight-forecast { font-size: 11.5px; color: var(--phone-sub); margin-top: 6px; line-height: 1.45; }
+.insight-alerts { list-style: none; margin: 10px 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.insight-alerts li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border-left: 3px solid var(--accent);
+  background: var(--phone-input);
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+.insight-alerts li[data-level="warn"] { border-left-color: var(--warn); }
+.insight-alerts li[data-level="danger"] { border-left-color: var(--danger); }
+.insight-alerts li[data-level="ok"] { border-left-color: #16a34a; }
+.insight-alerts li span { color: var(--phone-sub); }
+.ai-insight-lines { margin: 10px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 12px; line-height: 1.45; }
+.ai-insight-note { font-size: 10.5px; color: var(--phone-muted); margin-top: 8px; }

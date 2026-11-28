@@ -442,6 +442,7 @@
     saveLocalCache();
     renderCalendar();
     showToast("Đã xoá khoản chi khỏi sổ");
+    refreshInsights();
   }
 
   // =========================================================================
@@ -786,6 +787,136 @@
     closeCaptureSheet();
     switchScreen("calendar");
     showToast(`Đã chốt ${formatVnd(total)} vào ngày ${formatDateVi(date)}`);
+    refreshInsights({ notify: true });
+  }
+
+  // =========================================================================
+  // Phân tích chi tiêu: hạn mức tháng, cảnh báo (backend code tính) + nhận xét AI
+  // =========================================================================
+  const ALERT_RANK = { danger: 3, warn: 2, info: 1 };
+
+  async function refreshInsights({ notify = false } = {}) {
+    if (!state.backendOnline) return null;
+    try {
+      const res = await fetch(`/api/insights?date=${state.todayIso}`);
+      if (!res.ok) return null;
+      state.insights = await res.json();
+    } catch (_) {
+      return null;
+    }
+    renderInsights();
+    const top = topAlert(state.insights);
+    if (notify && top && top.level !== "info") {
+      setTimeout(() => showToast(`${top.title}: ${top.text}`), 2900);
+    }
+    return state.insights;
+  }
+
+  function topAlert(facts) {
+    const alerts = (facts && facts.alerts) || [];
+    return alerts.slice().sort((a, b) => ALERT_RANK[b.level] - ALERT_RANK[a.level])[0] || null;
+  }
+
+  function renderInsights() {
+    const f = state.insights;
+    if (!f) return;
+    const top = topAlert(f);
+    const banner = $("insight-banner");
+    banner.classList.toggle("hidden", !top);
+    if (top) {
+      banner.dataset.level = top.level;
+      $("insight-banner-icon").textContent = top.level === "info" ? "i" : "!";
+      $("insight-banner-title").textContent = top.title;
+      $("insight-banner-text").textContent = top.text;
+    }
+
+    $("insight-month-label").textContent = `tháng ${f.month}`;
+    $("insight-today-total").textContent = `Hôm nay: ${formatVnd(f.today_total)}`;
+    const b = f.budget;
+    if (document.activeElement !== $("budget-input")) $("budget-input").value = b ? b.limit : "";
+    $("budget-progress").classList.toggle("hidden", !b);
+    if (b) {
+      const fill = $("budget-bar-fill");
+      fill.style.width = `${Math.min(b.used_pct, 100)}%`;
+      fill.dataset.level = b.used_pct >= 100 ? "danger" : b.used_pct >= 80 ? "warn" : "ok";
+      $("budget-progress-text").textContent = b.remaining >= 0
+        ? `Đã chi ${formatVnd(f.month_total)} / ${formatVnd(b.limit)} (${String(b.used_pct).replace(".", ",")}%) · còn ${formatVnd(b.remaining)}` +
+          (b.safe_per_day ? ` · nên chi ≤ ${formatVnd(b.safe_per_day)}/ngày` : "")
+        : `Đã chi ${formatVnd(f.month_total)} / ${formatVnd(b.limit)} · vượt ${formatVnd(-b.remaining)}`;
+    }
+    $("insight-forecast").textContent =
+      `Trung bình ${formatVnd(f.daily_average)}/ngày · dự báo cuối tháng ${formatVnd(f.forecast_month_end)} · cùng kỳ tháng trước ${formatVnd(f.prev_same_span_total)}`;
+
+    const list = $("insight-alerts");
+    list.innerHTML = "";
+    (f.alerts || []).forEach((a) => {
+      const li = document.createElement("li");
+      li.dataset.level = a.level;
+      const strong = document.createElement("strong");
+      strong.textContent = a.title;
+      const span = document.createElement("span");
+      span.textContent = a.text;
+      li.append(strong, span);
+      list.appendChild(li);
+    });
+    if (!(f.alerts || []).length) list.innerHTML = `<li data-level="ok"><strong>Chi tiêu ổn</strong><span>Chưa có cảnh báo nào trong tháng này.</span></li>`;
+  }
+
+  async function saveBudget(e) {
+    e.preventDefault();
+    const raw = $("budget-input").value.trim();
+    const amount = raw === "" ? 0 : Number(raw);
+    if (!Number.isInteger(amount) || amount < 0) {
+      showToast("Hạn mức phải là số nguyên VND không âm");
+      return;
+    }
+    try {
+      const res = await fetch("/api/settings/budget", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ monthly_budget: amount }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        showToast(data.error || "Chưa lưu được hạn mức");
+        return;
+      }
+    } catch (_) {
+      showToast("Chưa kết nối được máy chủ");
+      return;
+    }
+    $("budget-input").blur();
+    showToast(amount ? `Đã đặt hạn mức tháng ${formatVnd(amount)}` : "Đã tắt hạn mức tháng");
+    await refreshInsights({ notify: true });
+  }
+
+  async function runAiInsight() {
+    const btn = $("btn-ai-insight");
+    btn.disabled = true;
+    btn.textContent = "AI đang phân tích…";
+    const list = $("ai-insight-lines");
+    try {
+      const res = await fetch("/api/insights/ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ date: state.todayIso }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "AI chưa trả lời");
+      list.innerHTML = "";
+      (data.lines.length ? data.lines : ["AI chưa đưa ra nhận xét khớp số liệu. Thử lại sau."]).forEach((line) => {
+        const li = document.createElement("li");
+        li.textContent = line;
+        list.appendChild(li);
+      });
+      list.classList.remove("hidden");
+      $("ai-insight-note").classList.remove("hidden");
+    } catch (err) {
+      showToast(String(err.message || err));
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "AI phân tích chi tiêu";
+    }
   }
 
   // =========================================================================
@@ -968,6 +1099,7 @@
     renderCalendar();
     renderAnalytics();
     showToast("Đã khôi phục dữ liệu mẫu");
+    refreshInsights();
   }
 
   // =========================================================================
@@ -1028,6 +1160,9 @@
     $("btn-run-ocr").addEventListener("click", () => runOcrAndCreateDraft("auto"));
     $("btn-retake-reread").addEventListener("click", () => showSheetStep("camera"));
     $("btn-manual-reread").addEventListener("click", openManualDraft);
+    $("budget-form").addEventListener("submit", saveBudget);
+    $("btn-ai-insight").addEventListener("click", runAiInsight);
+    $("insight-banner").addEventListener("click", () => switchScreen("analytics"));
     $("btn-retake-from-draft").addEventListener("click", () => showSheetStep("camera"));
     $("btn-discard-draft").addEventListener("click", closeCaptureSheet);
     $("step-draft").addEventListener("submit", confirmChot);
@@ -1073,6 +1208,7 @@
     bindEvents();
     await initBackend();
     renderCalendar();
+    refreshInsights({ notify: true });
   }
 
   init();

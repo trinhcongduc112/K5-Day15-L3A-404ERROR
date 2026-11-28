@@ -17,6 +17,7 @@ StorageRootDirectory = os.environ.get("SKYBILL_STORAGE_DIR") or os.path.join(Pro
 ImagesRootDirectory = os.path.join(StorageRootDirectory, "images")
 ReceiptsFilePath = os.path.join(StorageRootDirectory, "receipts.json")
 DraftsFilePath = os.path.join(StorageRootDirectory, "drafts.json")
+SettingsFilePath = os.path.join(StorageRootDirectory, "settings.json")
 StorageLock = FileLock(os.path.join(StorageRootDirectory, "ledger.lock"))
 
 
@@ -71,6 +72,31 @@ def _ReadJsonList(TargetFilePath: str) -> list:
         return ParsedData if isinstance(ParsedData, list) else []
     except Exception:
         return []
+
+
+def LoadUserSettings(UserId: str = "default_user") -> dict:
+    """Cài đặt của người dùng (vd hạn mức tháng) trong CSDL/settings.json."""
+    try:
+        with open(SettingsFilePath, "r", encoding="utf-8") as InputStream:
+            AllSettings = json.load(InputStream)
+    except (OSError, ValueError):
+        return {}
+    return AllSettings.get(UserId, {}) if isinstance(AllSettings, dict) else {}
+
+
+def SaveUserSettings(UserId: str, Changes: dict) -> dict:
+    """Gộp thay đổi vào cài đặt của một người dùng và ghi file nguyên tử."""
+    with StorageLock:
+        try:
+            with open(SettingsFilePath, "r", encoding="utf-8") as InputStream:
+                AllSettings = json.load(InputStream)
+        except (OSError, ValueError):
+            AllSettings = {}
+        if not isinstance(AllSettings, dict):
+            AllSettings = {}
+        AllSettings[UserId] = {**AllSettings.get(UserId, {}), **Changes}
+        _WriteJsonAtomic(SettingsFilePath, AllSettings)
+    return AllSettings[UserId]
 
 
 def EnsureStorageLayout() -> None:

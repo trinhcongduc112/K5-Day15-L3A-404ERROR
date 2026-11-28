@@ -56,4 +56,5 @@ CSDL/images/
 CSDL/receipts.json
 CSDL/drafts.json
 CSDL/ledger.lock
+CSDL/settings.json
 /data/ocr-weights/
