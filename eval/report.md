@@ -9,7 +9,7 @@
 | Lượt | Run ID | Đạt / tổng | % | thuong | kho | tu_choi | So với chuẩn "đạt" |
 |---|---|---|---|---|---|---|---|
 | 1 | `run-1@20261128-095527` | 20/20 | 100% | 8/8 | 8/8 | 4/4 | đạt (chuẩn ≥85%) |
-| 2 | | __/__ | | __/__ | __/__ | __/__ | đạt / chưa |
+| 2 | `run-2@20261128-051909` | 20/20 | 100% | 8/8 | 8/8 | 4/4 | đạt (chuẩn ≥85%, không vỡ chỗ khác) |
 
 Kết quả từng câu: `eval/run-1.csv`, `eval/run-2.csv`. Trace: `traces/run-1.jsonl`, `traces/run-2.jsonl`.
 
@@ -41,11 +41,20 @@ Kết quả từng câu: `eval/run-1.csv`, `eval/run-2.csv`. Trace: `traces/run-
 ## 3. Một lần cải tiến
 
 - Nhắm vào nhóm lỗi: **Nhóm 1 — Cần đọc lại oan** (11/40 ảnh có nhãn tổng rõ nhưng bị ép `Cần đọc lại`) — vì sao là nhóm **đau nhất với người dùng**: chiếm tỉ lệ lỗi lớn nhất (11/13 ca `Cần đọc lại`), xảy ra ngay cả trên 5 ảnh rõ (`thuong`, quality 0.79–0.84) và làm hỏng trải nghiệm cốt lõi "chụp một lần, xem nhanh rồi Chốt".
-- Đã sửa gì (có thể vài thay đổi cùng nhắm nhóm lỗi đó): __
-- Kết quả: nhóm lỗi đó __/__ → __/__ · tổng __% → __%
-- Câu nào **tệ đi** sau khi sửa: __
+- Đã sửa gì (commit `f1b47fd`, `99c0d91`, `c797c7c`, PR #12 `c9b9f1d`):
+  1. Thay OCR cục bộ Tesseract bằng **ONNX `ppocrv3-viesvtr-v7`** (PP-OCRv3 detection + VieSVTR v7 recognition) trong `codebase/document_ocr.py`.
+  2. Trong `codebase/agent.py`, chỉ gọi model đọc ảnh khi OCR cục bộ chưa đọc ra tổng (giảm gọi model thừa và tránh mâu thuẫn giả ở các ca OCR đã đọc đúng).
+  3. Bổ sung xử lý dòng tổng bị OCR gộp với "Tổng số lượng" trong `document_ocr.py`, giữ nguyên các chốt an toàn (ảnh mờ không gọi model, chỉ ghi khi Chốt).
+- Kết quả:
+  - **Nhóm lỗi 1 (40 ảnh MC-OCR):** `Cần đọc lại` giảm **13/40 → 3/40** (`image-check-before.jsonl` → `image-check-after.jsonl`); số ảnh đọc đúng tăng **25/40 (62,5%) → 35/40 (87,5%)**; `xem_nhanh_sai` giảm **2 → 1**; token đọc ảnh giảm **44.816 vào / 1.314 ra → 5.415 vào / 149 ra** (giảm ~88%).
+  - **Bộ 20 câu chữ (`run-2.csv`):** giữ nguyên **20/20 (100%)** (`8/8 thuong · 8/8 kho · 4/4 tu_choi`), chứng minh không làm vỡ luồng ghi sổ, truy vấn hay từ chối.
+- Câu nào **tệ đi** sau khi sửa: **0 ảnh tệ đi** trong các ảnh có nhãn tổng (25 ảnh đúng trước đó đều giữ đúng; 10 ảnh chuyển từ sai/`Cần đọc lại` sang đúng). Riêng `mcocr_public_145014hpikq.jpg` chuyển từ `Cần đọc lại` sang `Xem nhanh` (`14.000đ`), nhưng cột `total_cost` trong `mcocr_sample_40.csv` của ảnh này không có số tổng nên `truth_match` là `null`.
 
 ## 4. Còn lại
 
-- Lỗi chưa sửa + nguy hiểm thế nào: __
-- Nếu có thêm 1 tuần: __
+- Lỗi chưa sửa + nguy hiểm thế nào:
+  1. **Đọc sai chữ số lẻ (`mcocr_public_145013niqeq.jpg`):** OCR và model cùng ra `60.582đ` thay vì `60.500đ` (lệch 82đ). Nguy hiểm ở mức trung bình: người dùng có thể bấm **Chốt** nhầm số tiền nếu không nhìn kỹ bản `Xem nhanh`.
+  2. **3 ảnh vẫn `Cần đọc lại` (`tzbvy`, `uzdqt`, `wbtei`):** ảnh mờ/nhiễu nặng hoặc thiếu số tổng trên ảnh; hệ thống chọn an toàn (không đoán, yêu cầu chụp lại) nên không ghi sai sổ nhưng người dùng phải nhập tay hoặc chụp lại.
+- Nếu có thêm 1 tuần:
+  - Thêm đối chiếu chéo tổng các dòng món (`sum(items)`) với `printed_total` để phát hiện ca lệch vài chữ số như `niqeq` (`60.582` vs `60.500`), đẩy về cảnh báo kiểm tra thay vì cho `Xem nhanh` im lặng.
+  - Bổ sung benchmark ảnh thật có nhãn đầy đủ cho 100% ảnh (loại bỏ nhãn khuyết như `hpikq` hoặc nhãn dính ký tự như `zxdlo`).

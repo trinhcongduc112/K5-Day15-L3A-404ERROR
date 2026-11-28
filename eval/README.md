@@ -46,11 +46,18 @@ Kiểm kỹ thuật ngày 27/11/2026: chạy đủ 20 câu qua `answer()` với 
 
 | Lượt | Run ID | Model | Cấu hình (prompt / công cụ / thay đổi) | Đạt / tổng | % | Đạt chuẩn? |
 |---|---|---|---|---|---|---|
-| 1 | | | | __/__ | | |
-| 2 | | | | __/__ | | |
+| 1 | `run-1@20261128-095527` | `gpt-5.4-nano-2026-03-17` | Commit `ad0020f`: Tesseract + model đọc ảnh kiểm chéo OCR | 20/20 | 100% | Đạt (≥85%) |
+| 2 | `run-2@20261128-051909` | `gpt-5.4-nano-2026-03-17` | Commit `c9b9f1d`: ONNX `ppocrv3-viesvtr-v7` + chỉ gọi model khi OCR chưa ra tổng | 20/20 | 100% | Đạt (≥85%) |
+
+- **Phép đo bổ sung trên 40 ảnh MC-OCR (`data/receipts/mcocr_sample_40.csv`):**
+  - Tesseract một mình (`eval/image-check-tesseract.jsonl`): **6/40 đúng** (33 `Cần đọc lại`, 1 sai).
+  - Trước cải tiến (`eval/image-check-before.jsonl`): **25/40 đúng** (13 `Cần đọc lại`, 2 sai; `44,816` token vào).
+  - Sau cải tiến (`eval/image-check-after.jsonl`): **35/40 đúng (87,5%)** (3 `Cần đọc lại`, 1 sai, 1 nhãn khuyết tổng; `5,415` token vào).
 
 Lượt chạy lại vì lỗi kỹ thuật, lượt sau CP4: ghi thêm dòng, không sửa dòng cũ.
 
 ## 6. Lỗi chính
 
-Tóm 2–3 dòng từ `eval/report.md`: nhóm lỗi lớn nhất · đã sửa gì · còn lại gì.
+- Nhóm lỗi lớn nhất trước cải tiến: **Cần đọc lại oan** (11/40 ảnh có nhãn tổng nhưng Tesseract mất số hoặc mâu thuẫn kiểm chéo với model).
+- Đã sửa: thay Tesseract bằng ONNX `ppocrv3-viesvtr-v7`, chỉ gọi model khi OCR chưa ra tổng, xử lý dòng tổng gộp số lượng → tăng đọc đúng **25/40 → 35/40**, giảm `Cần đọc lại` **13 → 3**, giảm ~88% token đọc ảnh, giữ nguyên **20/20** bộ câu chữ.
+- Còn lại: 1 ca đọc sai chữ số lẻ (`niqeq`: `60.582` thay vì `60.500`) và 3 ca mờ/thiếu tổng vẫn `Cần đọc lại` an toàn (`tzbvy`, `uzdqt`, `wbtei`). Chi tiết trong [report.md](report.md).
