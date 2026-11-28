@@ -135,7 +135,7 @@ flowchart TD
   - Xử lý OTP, mật khẩu, số thẻ; tư vấn đầu tư; đọc hay xuất sổ của người khác. Cả 4 loại bị từ chối trước khi gọi model (bộ câu thử `tu_choi` 4/4 đạt ở cả 2 lượt).
 - Ai có thể bị hại nếu AI sai, và nhóm chặn thế nào:
   - **Người dùng** bị lệch sổ nếu số thực trả hoặc ngày đọc sai, bị cộng trùng nếu chụp lại cùng hóa đơn. Chặn: số model đọc phải trùng tổng OCR hoặc có trong chữ OCR của chính ảnh, lệch thì **Cần đọc lại**; ảnh mờ/lóa không gọi model; ngày sau ngày chụp → Cần đọc lại; không đọc được ngày thì dùng ngày chụp và ghi rõ "(ngày chụp)"; sửa được tiền và nhóm trước khi Chốt; mã lượt chụp chống cộng trùng (`codebase/check_flow.py` đạt cả 3 ca).
-  - Rủi ro còn lại: lệch vài chữ số vẫn có thể lọt (`niqeq` đọc 60.582, nhãn ghi 60.500), nên bản xem nhanh luôn hiện số để người dùng nhìn lại trước khi Chốt.
+  - Rủi ro còn lại: nếu OCR cục bộ đọc nhầm một chữ số ở dòng tổng thì không có model kiểm chéo (model chỉ được gọi khi OCR chưa ra tổng), nên bản xem nhanh luôn hiện số để người dùng nhìn lại trước khi Chốt. Trên 40 ảnh mẫu chưa gặp ca nào; ca `niqeq` trước ghi là đọc lệch thực ra do nhãn sai (ảnh in 60.582) — sửa sau CP4.
 
 ## §10. Phân công & changelog
 - **Cặp sản phẩm (dự kiến):** Vũ phụ trách nhận ảnh, nối model và giao diện lịch. Đức viết spec, code kiểm dữ liệu, lưu và tổng hợp ngày/tháng.
@@ -154,4 +154,4 @@ flowchart TD
 
 | Thời điểm | Đổi gì | Vì sao |
 |---|---|---|
-|  |  |  |
+| 28/11 22:08 | Sửa mô tả ca `niqeq` ở `eval/report.md` §2–§4, `eval/README.md` §5–§6, `spec.md` §9, `cost/cost-estimate.md` §1 và slide trang 5, 7, 8 (xuất lại `demo-slides.pdf`): ca này là lỗi nhãn, hệ thống đọc đúng. Giữ nguyên số đo theo nhãn (35/40) và các file `eval/image-check-*.jsonl`; ghi thêm 36/40 khi đối chiếu với ảnh. | Mở ảnh `mcocr_public_145013niqeq.jpg`: dòng `TỔNG TIỀN PHẢI T.TOÁN` in 60.582 (69.000 ₫/kg × 0,878 kg), nhãn `data/receipts/mcocr_sample_40.csv` ghi 60,500. Không sửa nhãn vì đó là đáp án của phép đo đã chạy. |

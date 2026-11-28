@@ -17,7 +17,7 @@
   - `gpt-5.4-mini`: **$0.75** / 1M token vào · **$4.50** / 1M token ra.
 - **Tỉ lệ đạt dùng để tính:**
   - Luồng chữ (tra cứu / chốt / từ chối): **20/20 (100%)** — lượt `run-2@20261128-051909` (`eval/run-2.csv`).
-  - Luồng đọc ảnh hóa đơn (ngoài `simulate`): **35/40 (87,5%)** — phép đo sau cải tiến `eval/image-check-after.jsonl` (**không dùng 100%** vì thực tế còn 3 ca `Cần đọc lại`, 1 ca đọc sai chữ số lẻ, 1 ca nhãn khuyết tổng).
+  - Luồng đọc ảnh hóa đơn (ngoài `simulate`): **35/40 (87,5%)** — phép đo sau cải tiến `eval/image-check-after.jsonl` (**không dùng 100%** vì thực tế còn 3 ca `Cần đọc lại`, 1 ca lệch nhãn, 1 ca nhãn khuyết tổng). *Sửa sau CP4:* ca lệch nhãn (`niqeq`) trước ghi là "đọc sai chữ số lẻ", thực ra hệ thống đọc đúng (ảnh in 60.582, nhãn ghi 60.500); vẫn giữ tỉ lệ 87,5% theo nhãn để tính thận trọng.
 - **Đo token trên model `gpt-5.4-nano-2026-03-17`, tính giá model `gpt-5.4-nano` và `gpt-5.4-mini`.**
 
 ## 2. Kết quả mô phỏng

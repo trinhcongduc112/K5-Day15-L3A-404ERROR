@@ -150,11 +150,11 @@
       <table>
         <tr><th>40 ảnh MC-OCR có nhãn</th><th class="num">Trước</th><th class="num">Sau</th></tr>
         <tr><td>Đọc đúng tổng</td><td class="num">25</td><td class="num ok">35</td></tr>
-        <tr><td>Đọc sai</td><td class="num">2</td><td class="num">1</td></tr>
+        <tr><td>Sai theo nhãn</td><td class="num">2</td><td class="num">1</td></tr>
         <tr><td>Cần đọc lại</td><td class="num">13</td><td class="num">3</td></tr>
         <tr><td>Token model đọc ảnh</td><td class="num">44.816</td><td class="num">5.415</td></tr>
       </table>
-      <p style="font-size:17px;margin-top:12px">Lỗi chính lượt 1: <b>Cần đọc lại oan</b> (11/40 ảnh có tổng rõ). Cải tiến: OCR cục bộ ONNX thay Tesseract, model chỉ gọi khi cần. 0 ảnh tệ đi. Còn sai: <code>niqeq</code> đọc 60.582, nhãn 60.500.</p>
+      <p style="font-size:17px;margin-top:12px">Lỗi chính lượt 1: <b>Cần đọc lại oan</b> (11/40 ảnh có tổng rõ). Cải tiến: OCR cục bộ ONNX thay Tesseract, model chỉ gọi khi cần. 0 ảnh tệ đi. Ca “sai” còn lại (<code>niqeq</code>) do nhãn: ảnh in 60.582, đúng số app đọc.</p>
     </div>
   </div>
   <div class="src">Nguồn: <code>eval/report.md</code>, <code>eval/README.md</code>, <code>eval/run-1.csv</code>, <code>eval/run-2.csv</code>, <code>eval/image-check-before.jsonl</code> → <code>eval/image-check-after.jsonl</code> (đo ngoài bộ 20 câu).</div>
@@ -185,7 +185,7 @@
   <h1>Đề xuất: GO cho nhóm thử nhỏ, giữ bước Chốt thủ công</h1>
   <div class="grid g3">
     <div class="card"><h2>Pain có thật</h2><p style="margin:0">70,8% chi rải rác khó gom theo ngày; 58,3% bỏ app vì quên nhập (khảo sát 24 người) — trang 1</p></div>
-    <div class="card"><h2>Chạy được, an toàn</h2><p style="margin:0">20/20 câu thử ở 2 lượt; ảnh đúng 35/40, chỉ 1 sai; không ghi khi chưa Chốt, 4/4 câu từ chối đúng — trang 5</p></div>
+    <div class="card"><h2>Chạy được, an toàn</h2><p style="margin:0">20/20 câu thử ở 2 lượt; ảnh đúng 35/40 (ca sai duy nhất do nhãn); không ghi khi chưa Chốt, 4/4 câu từ chối đúng — trang 5</p></div>
     <div class="card"><h2>Rẻ</h2><p style="margin:0">≈ 34 ₫/người/tháng với <code>gpt-5.4-nano</code>; 100 người ≈ 3.356 ₫/tháng — trang 6</p></div>
   </div>
   <p style="margin-top:26px"><b>Chưa chắc:</b> impact 210 phút/tháng là tự ước tính, chưa đo thời gian với người dùng thật; ảnh mẫu là bộ công khai, chưa phải ảnh người dùng chụp.</p>
@@ -198,11 +198,11 @@
   <div class="kicker">Nếu có thêm 1 tuần</div>
   <h1>Ba việc, theo lỗi còn lại</h1>
   <div class="grid g3">
-    <div class="card"><h2>1 · Bắt lệch chữ số lẻ</h2><p style="margin:0">Đối chiếu tổng các món với tổng in trên hóa đơn để cảnh báo ca như <code>niqeq</code> (60.582 vs 60.500) thay vì cho Xem nhanh im lặng.</p></div>
+    <div class="card"><h2>1 · Rà nhãn, thêm chốt chặn</h2><p style="margin:0">4/40 nhãn ảnh sai hoặc thiếu (<code>niqeq</code> ghi 60.500 dù ảnh in 60.582). Sửa nhãn trước lần đo sau; đối chiếu tổng các món với tổng in để bắt OCR lệch số.</p></div>
     <div class="card"><h2>2 · Ảnh khó còn lại</h2><p style="margin:0">Ảnh xoay ngang và năm đọc sai (<code>wbtei</code>, <code>uzdqt</code>): Vũ đã thử tự xoay ±90° (PR #9), cần đo lại có model và chấm cả ngày, không chỉ tổng tiền.</p></div>
     <div class="card"><h2>3 · Đo impact thật</h2><p style="margin:0">Cho 2–3 người ngoài nhóm ghi cùng hóa đơn bằng tay và bằng app, bấm giờ để thay số 35 giây tự ước tính.</p></div>
   </div>
-  <div class="src">Nguồn: <code>eval/report.md</code> §4 · PR #9 · <code>validation/log.md</code>.</div>
+  <div class="src">Nguồn: <code>eval/report.md</code> §2, §4 · <code>data/receipts/mcocr_sample_40.csv</code> · PR #9 · <code>validation/log.md</code>.</div>
 </section>
 
 </body>
