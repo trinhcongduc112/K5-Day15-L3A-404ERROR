@@ -116,13 +116,13 @@ flowchart TD
 ## §7. Đánh giá & chuẩn "đạt" *(guide 2.4, 4.1)*
 - Data Card: `data/DATA_CARD.md`. Benchmark CP2 có **20 câu** (8 thường, 8 khó, 4 từ chối) và **4 metric**. Có 7/20 tình huống chuyển thể từ review công khai (35%); giá, ngày và sổ mẫu là giả lập.
 - **Chuẩn đạt CP2 — đội trưởng đã xác nhận ngày 27/11/2026:** ít nhất **85% câu đạt**. Ca nhập đủ dữ liệu phải hiển thị đúng ngày và tổng thực trả, chỉ ghi sau khi Chốt, ca truy vấn ngày/tuần/tháng/năm có dữ liệu phải khớp số liệu, ca thiếu căn cứ không được ghi sai và **100% câu từ chối** phải từ chối đúng. Với 20 câu hiện tại, 85% tương đương **ít nhất 17/20 câu**. Giữ nguyên chuẩn sau khi nộp CP2.
-- Kết quả: lượt 1 **20/20 (100%)** (thường 8/8 · khó 8/8 · từ chối 4/4, model `gpt-5.4-nano-2026-03-17`) · lượt 2 __/__ (__%) — run ID: `run-1@20261128-095527` / __ → chi tiết `eval/report.md`, hồ sơ `eval/README.md`
+- Kết quả: lượt 1 **20/20 (100%)** (thường 8/8 · khó 8/8 · từ chối 4/4, model `gpt-5.4-nano-2026-03-17`) · lượt 2 **20/20 (100%)** (thường 8/8 · khó 8/8 · từ chối 4/4, sau cải tiến ONNX `ppocrv3-viesvtr-v7`: 40 ảnh MC-OCR đạt 35/40) — run ID: `run-1@20261128-095527` / `run-2@20261128-051909` → chi tiết `eval/report.md`, hồ sơ `eval/README.md`
 
 ## §8. Chi phí khi dùng thật *(guide 4.2)*
-- Persona + giá: `cost/personas.yaml` · lượt mô phỏng: `cost/simulate-__.csv` (__ phiên)
-- Chi phí / task thành công: __ (model __) · __ (model __)
-- Chi phí / tháng ở quy mô thật: thấp __ · cơ sở __ · cao __ → chi tiết `cost/cost-estimate.md`
-- So với impact / người / tháng (§2): đáng làm không, vì sao:
+- Persona + giá: `cost/personas.yaml` · lượt mô phỏng: `cost/simulate-1.csv` (50 phiên, `simulate-1@20261128-123906`)
+- Chi phí / task thành công (chữ 100% · ảnh 87,5%): **$0.000034 + $0.000036** (`gpt-5.4-nano`) · **$0.00013 + $0.000135** (`gpt-5.4-mini`)
+- Chi phí / tháng ở quy mô thật (gồm cả chữ + ảnh, `gpt-5.4-nano`): thấp (30) **$0.040 (≈ 1.007 ₫)** · cơ sở (100) **$0.132 (≈ 3.356 ₫)** · cao (300) **$0.396 (≈ 10.068 ₫)** → chi tiết `cost/cost-estimate.md`
+- So với impact / người / tháng (§2): **Rất đáng làm** — tốn **≈ 34 ₫/người/tháng** (`gpt-5.4-nano`) để tiết kiệm 7–11 phút nhập hóa đơn và tra cứu lịch sử mỗi tháng.
 
 ## §9. Rủi ro & an toàn
 - Dữ liệu: đã ẩn danh gì, không thu gì, không đưa gì vào model gói miễn phí:
