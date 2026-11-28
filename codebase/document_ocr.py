@@ -411,6 +411,45 @@ def DecodeCtcGreedy(LogitsArray) -> tuple:
     return NormalizedText, float(NumpyLib.clip(MeanConfidence, 0.0, 1.0))
 
 
+def _RunOnnxPassOnRgb(RgbImageArray, DetectionSession, RecognitionSession) -> tuple:
+    """Chạy một lượt phát hiện + nhận dạng ONNX trên ảnh RGB đã chọn hướng."""
+    OriginalHeight, OriginalWidth = RgbImageArray.shape[:2]
+    DetectionBlob, ScaleX, ScaleY = PreprocessDetectionImage(RgbImageArray)
+    DetectionInputName = DetectionSession.get_inputs()[0].name
+    DetectionOutputs = DetectionSession.run(None, {DetectionInputName: DetectionBlob})
+    ProbabilityMap = DetectionOutputs[0]
+    DetectedBoxes = PostprocessDetectionBoxes(
+        NumpyLib.asarray(ProbabilityMap), ScaleX, ScaleY, OriginalWidth, OriginalHeight
+    )
+
+    RecognitionInputName = RecognitionSession.get_inputs()[0].name
+    RecognizedLines = []
+    for BoxCoords in DetectedBoxes:
+        LeftX, TopY, RightX, BottomY = BoxCoords
+        LineCrop = RgbImageArray[TopY:BottomY, LeftX:RightX]
+        if LineCrop.size == 0:
+            continue
+        RecognitionBlob = PreprocessRecognitionCrop(LineCrop)
+        RecognitionOutputs = RecognitionSession.run(None, {RecognitionInputName: RecognitionBlob})
+        LogitsTensor = RecognitionOutputs[0]
+        LineText, LineConfidence = DecodeCtcGreedy(NumpyLib.asarray(LogitsTensor))
+        if LineText:
+            RecognizedLines.append(
+                {
+                    "text": LineText,
+                    "confidence": round(LineConfidence, 4),
+                    "box": [int(LeftX), int(TopY), int(RightX), int(BottomY)],
+                }
+            )
+
+    MeanConf = (
+        sum(LineItem["confidence"] for LineItem in RecognizedLines) / float(len(RecognizedLines))
+        if RecognizedLines
+        else 0.0
+    )
+    return RecognizedLines, MeanConf
+
+
 def _extract_onnx_lines(ImageBytes: bytes) -> dict:
     """Chạy thật PP-OCRv3 DBNet + VieSVTR v7 trên ảnh hoá đơn và trả về danh sách dòng."""
     if not OcrDependenciesAvailable:
@@ -426,41 +465,23 @@ def _extract_onnx_lines(ImageBytes: bytes) -> dict:
         DetectionSession, RecognitionSession = _GetOnnxSessions()
         PilImage = Image.open(io.BytesIO(ImageBytes)).convert("RGB")
         RgbOriginal = SuppressRedOverlay(NumpyLib.asarray(PilImage, dtype=NumpyLib.uint8))
-        OriginalHeight, OriginalWidth = RgbOriginal.shape[:2]
+        RecognizedLines, MeanConf = _RunOnnxPassOnRgb(RgbOriginal, DetectionSession, RecognitionSession)
 
-        DetectionBlob, ScaleX, ScaleY = PreprocessDetectionImage(RgbOriginal)
-        DetectionInputName = DetectionSession.get_inputs()[0].name
-        DetectionOutputs = DetectionSession.run(None, {DetectionInputName: DetectionBlob})
-        ProbabilityMap = DetectionOutputs[0]
-        DetectedBoxes = PostprocessDetectionBoxes(
-            NumpyLib.asarray(ProbabilityMap), ScaleX, ScaleY, OriginalWidth, OriginalHeight
-        )
+        # Nếu ảnh bị chụp xoay ngang 90° khiến OCR đọc được rất ít dòng hoặc độ tin cậy thấp, thử xoay ±90°.
+        if len(RecognizedLines) < 8 or MeanConf < 0.50:
+            BestLines = RecognizedLines
+            BestMeanConf = MeanConf
+            BestScore = float(len(RecognizedLines)) * MeanConf
+            for RotateCode in (OpenCvLib.ROTATE_90_CLOCKWISE, OpenCvLib.ROTATE_90_COUNTERCLOCKWISE):
+                RotatedRgb = OpenCvLib.rotate(RgbOriginal, RotateCode)
+                CandLines, CandMeanConf = _RunOnnxPassOnRgb(RotatedRgb, DetectionSession, RecognitionSession)
+                CandScore = float(len(CandLines)) * CandMeanConf
+                if CandMeanConf >= 0.55 and CandScore > BestScore * 1.5:
+                    BestLines = CandLines
+                    BestMeanConf = CandMeanConf
+                    BestScore = CandScore
+            RecognizedLines, MeanConf = BestLines, BestMeanConf
 
-        RecognitionInputName = RecognitionSession.get_inputs()[0].name
-        RecognizedLines = []
-        for BoxCoords in DetectedBoxes:
-            LeftX, TopY, RightX, BottomY = BoxCoords
-            LineCrop = RgbOriginal[TopY:BottomY, LeftX:RightX]
-            if LineCrop.size == 0:
-                continue
-            RecognitionBlob = PreprocessRecognitionCrop(LineCrop)
-            RecognitionOutputs = RecognitionSession.run(None, {RecognitionInputName: RecognitionBlob})
-            LogitsTensor = RecognitionOutputs[0]
-            LineText, LineConfidence = DecodeCtcGreedy(NumpyLib.asarray(LogitsTensor))
-            if LineText:
-                RecognizedLines.append(
-                    {
-                        "text": LineText,
-                        "confidence": round(LineConfidence, 4),
-                        "box": [int(LeftX), int(TopY), int(RightX), int(BottomY)],
-                    }
-                )
-
-        MeanConf = (
-            sum(LineItem["confidence"] for LineItem in RecognizedLines) / float(len(RecognizedLines))
-            if RecognizedLines
-            else 0.0
-        )
         return {
             "engine_available": True,
             "engine_version": "ppocrv3-viesvtr-v7",
@@ -528,12 +549,15 @@ def _ParseVietnameseMoneyToken(RawDigits: str) -> int:
 
 
 def normalize_receipt_date(raw_date: str) -> str:
-    """Chuẩn hóa ngày in ISO, DD/MM/YYYY hoặc DD-MM-YYYY."""
+    """Chuẩn hóa ngày in ISO, DD/MM/YYYY hoặc DD-MM-YYYY; bỏ qua năm lỗi OCR ngoài [1990, 2100]."""
     try:
         first, second, third = re.split(r"[-/]", raw_date)
-        if len(first) == 4:
-            return datetime.date(int(first), int(second), int(third)).isoformat()
-        return datetime.date(int(third), int(second), int(first)).isoformat()
+        parsed = (
+            datetime.date(int(first), int(second), int(third))
+            if len(first) == 4
+            else datetime.date(int(third), int(second), int(first))
+        )
+        return parsed.isoformat() if 1990 <= parsed.year <= 2100 else ""
     except (TypeError, ValueError):
         return ""
 
@@ -620,7 +644,7 @@ ImageTotalHighPattern = re.compile(
     r"tien\s*thanh\s*toan|tong\s*tien\b(?!\s*hang)|grand\s*total|\btotal\b)"
 )
 ImageTotalMediumPattern = re.compile(r"(cong\s*tien\s*hang|cong\s*tien|thanh\s*toan)")
-ImageTotalLowPattern = re.compile(r"(tong\s*tien\s*hang)")
+ImageTotalLowPattern = re.compile(r"(tong\s*tien\s*hang|\bthanh\s*cong\b)")
 ImageSkipRowPattern = re.compile(
     r"(tien\s*khach|tien\s*dua|khach\s*(?:dua|tra)|tien\s*thua|tien\s*mat|tra\s*lai|change|cash|"
     r"don\s*gia|thanh\s*tien|ten\s*hang)"
@@ -629,6 +653,7 @@ ImageSkipRowPattern = re.compile(
 # ("Tong so tien thanh toan: Tong so luong hang: 18,200.00", ảnh quwvb). Số lượng < 1000 nên không lẫn vào giá.
 ImageQuantityRowPattern = re.compile(r"(tong\s*so\b(?!\s*(?:tien|thanh))|so\s*luong)")
 ImageDiscountPattern = re.compile(r"(chiet\s*khau|giam\s*gia|khuyen\s*mai)")
+ImageNegativeDiscountRowPattern = re.compile(r"(?:da|a)\s*giam|giam\s*tru")
 ImagePricePattern = re.compile(r"(?<!\d)(\d{1,3}(?:\.\d{3})+|\d{1,3}(?:,\d{3})+|\d{4,7})(?!\d)")
 ImageSpacePricePattern = re.compile(r"(?<!\d)(\d{1,3}\s\d{3})(?!\d)")
 ImageNoisePattern = re.compile(
@@ -666,7 +691,10 @@ def read_image_total(LogicalRows: list) -> int:
             PendingPriority = 0
             continue
         PendingPriority = 0
-        if Priority and not ImageDiscountPattern.search(Normalized):
+        IsNegativeDiscountRow = bool(
+            ImageNegativeDiscountRowPattern.search(Normalized) and re.search(r"-\s*\d", RowItem["text"])
+        )
+        if Priority and not ImageDiscountPattern.search(Normalized) and not IsNegativeDiscountRow:
             if Prices:
                 Best.setdefault(Priority, set()).add(Prices[-1])
             else:

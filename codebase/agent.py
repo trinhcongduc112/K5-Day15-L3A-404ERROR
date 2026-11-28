@@ -64,11 +64,14 @@ def choose_category(receipt_text: str) -> str:
 
 
 RECEIPT_IMAGE_PROMPT = (
-    "Bạn đọc ảnh hóa đơn tiếng Việt. Chỉ trả một đối tượng JSON, không giải thích:\n"
+    "Bạn đọc ảnh hóa đơn tiếng Việt (có thể xoay ngang hoặc là phiếu POS ngân hàng). "
+    "Chỉ trả một đối tượng JSON, không giải thích:\n"
     '{"merchant": tên cửa hàng hoặc "", "date": "YYYY-MM-DD" in trên hóa đơn hoặc "", '
     '"paid_total": tổng phải thanh toán (số nguyên VND) hoặc 0, "uncertain": true/false}\n'
-    "paid_total lấy ở dòng Tổng cộng / Tổng tiền phải thanh toán / Thanh toán / Cộng tiền hàng. "
-    "KHÔNG lấy tiền khách đưa, tiền khách trả, tiền thừa, tiền trả lại, mã số, số điện thoại. "
+    "paid_total lấy ở dòng Tổng cộng / Tổng tiền phải thanh toán / Tổng số thanh toán / Thanh toán / "
+    "Cộng tiền hàng / Thành công (chấp nhận số dính ký hiệu tiền như VND229,869 hoặc VNĐ 229.869). "
+    "KHÔNG lấy tiền khách đưa, tiền khách trả, tiền thừa, tiền trả lại, tiền đã giảm/chiết khấu, mã số, số điện thoại. "
+    "Nếu ngày trên hóa đơn bị mờ, thiếu hoặc năm bất hợp lý, trả date=\"\" để dùng ngày chụp. "
     "Đặt uncertain=true và paid_total=0 khi số thực trả bị mờ, bị che, hoặc có nhiều mức tổng mâu thuẫn. "
     "Không đoán số không nhìn thấy trên ảnh."
 )
@@ -127,11 +130,19 @@ def read_receipt_image(scan: dict, image_bytes: bytes, capture_date: str) -> dic
     if total and not grounded:
         note(f"Số model đọc ({total}) không có trong chữ OCR của ảnh → Cần đọc lại")
     merchant = str(fields.get("merchant") or "").strip()
+    scan_date = scan.get("date") or ""
+    valid_scan_date = scan_date if (scan_date and scan_date <= capture_date) else ""
+    chosen_date = date or valid_scan_date or capture_date
+    chosen_date_source = (
+        "hóa đơn"
+        if (date or (scan.get("date_source") == "hóa đơn" and chosen_date == valid_scan_date))
+        else "ngày chụp"
+    )
     return {
         **scan,
         "merchant": merchant or scan.get("merchant") or "không rõ",
-        "date": date or scan.get("date") or capture_date,
-        "date_source": "hóa đơn" if date else "ngày chụp",
+        "date": chosen_date,
+        "date_source": chosen_date_source,
         "printed_total": total if grounded else 0,
         "is_uncertain": bool(fields.get("uncertain")) or not grounded or future,
         "ocr_engine": f"{scan.get('ocr_engine')} + model đọc ảnh",
