@@ -72,6 +72,7 @@ PriceTokenPattern = re.compile(
     re.IGNORECASE,
 )
 PaymentAmountPattern = re.compile(r"(?<![\w.,])\d+(?:(?:[.,]| (?=\d{3}(?!\d)))\d{3})*(?:\s*(?:k|nghìn|ngàn|đ|d|vnđ|vnd))?(?![\w.,])", re.IGNORECASE)
+ShortDatePattern = re.compile(r"(?<![\d/])(\d{1,2}/\d{1,2}/\d{2})(?![\d/])")
 DateValuePattern = re.compile(r"(?<!\d)(\d{4}-\d{2}-\d{2}|\d{1,2}[-/]\d{1,2}[-/]\d{4})(?!\d)")
 TotalKeywordPattern = re.compile(
     r"^(?:(?:tong\s*(?:so\s*)?(?:cong|tien|bill|thanh\s*toan|phai\s*tra)|(?:so\s*)?(?:tien\s*)?(?:can|phai)\s*tra"
@@ -533,7 +534,8 @@ def normalize_receipt_date(raw_date: str) -> str:
         first, second, third = re.split(r"[-/]", raw_date)
         if len(first) == 4:
             return datetime.date(int(first), int(second), int(third)).isoformat()
-        return datetime.date(int(third), int(second), int(first)).isoformat()
+        year = int(third) + 2000 if len(third) == 2 else int(third)  # "24/02/21" → 2021
+        return datetime.date(year, int(second), int(first)).isoformat()
     except (TypeError, ValueError):
         return ""
 
@@ -629,6 +631,11 @@ ImageSkipRowPattern = re.compile(
 # ("Tong so tien thanh toan: Tong so luong hang: 18,200.00", ảnh quwvb). Số lượng < 1000 nên không lẫn vào giá.
 ImageQuantityRowPattern = re.compile(r"(tong\s*so\b(?!\s*(?:tien|thanh))|so\s*luong)")
 ImageDiscountPattern = re.compile(r"(chiet\s*khau|giam\s*gia|khuyen\s*mai)")
+# Dòng tổng kiểu cân điện tử: "Thành tiền: 208.000" (khác tiêu đề cột "Thành tiền" không có số).
+ImageSummaryLinePattern = re.compile(r"^thanh\s*tien\s*[:\-]?\s*\d")
+# Tiền thối lại cho khách: "Trả lại -92.000", "Tiền thừa 24.500".
+ImageChangeRowPattern = re.compile(r"(tra\s*lai|tien\s*thua|tien\s*thoi)")
+ImageTenderRowPattern = re.compile(r"(tien\s*khach|khach\s*(?:dua|tra)|tien\s*dua|tien\s*mat|cash)")
 ImagePricePattern = re.compile(r"(?<!\d)(\d{1,3}(?:\.\d{3})+|\d{1,3}(?:,\d{3})+|\d{4,7})(?!\d)")
 ImageSpacePricePattern = re.compile(r"(?<!\d)(\d{1,3}\s\d{3})(?!\d)")
 ImageNoisePattern = re.compile(
@@ -651,15 +658,24 @@ def read_image_total(LogicalRows: list) -> int:
     Trả 0 khi không thấy dòng tổng, hoặc khi hai dòng cùng mức ưu tiên cao nhất ghi hai số khác nhau.
     """
     Best = {}  # mức ưu tiên → tập số tiền
+    ChangeAmounts = set()
+    TenderSeen = False
     PendingPriority = 0
     for RowItem in LogicalRows:
         Normalized = re.sub(r"^[^a-z0-9]+", "", _StripVietnameseAccents(RowItem["text"]))
         HighTotal = ImageTotalHighPattern.search(Normalized)
-        if ImageSkipRowPattern.search(Normalized) or (ImageQuantityRowPattern.search(Normalized) and not HighTotal):
+        SummaryLine = bool(ImageSummaryLinePattern.search(Normalized)) and not HighTotal
+        if ImageChangeRowPattern.search(Normalized):
+            ChangeAmounts.update(_ImageRowPrices(RowItem["text"], AllowSpace=True)[-1:])
+        elif ImageTenderRowPattern.search(Normalized) and _ImageRowPrices(RowItem["text"], AllowSpace=True):
+            TenderSeen = True
+        if not SummaryLine and (
+            ImageSkipRowPattern.search(Normalized) or (ImageQuantityRowPattern.search(Normalized) and not HighTotal)
+        ):
             PendingPriority = 0
             continue
         Priority = (3 if HighTotal else 2 if ImageTotalMediumPattern.search(Normalized)
-                    else 1 if ImageTotalLowPattern.search(Normalized) else 0)
+                    else 1 if (SummaryLine or ImageTotalLowPattern.search(Normalized)) else 0)
         Prices = _ImageRowPrices(RowItem["text"], AllowSpace=bool(Priority or PendingPriority))
         if PendingPriority and Prices and not Priority:
             Best.setdefault(PendingPriority, set()).add(Prices[-1])
@@ -671,7 +687,17 @@ def read_image_total(LogicalRows: list) -> int:
                 Best.setdefault(Priority, set()).add(Prices[-1])
             else:
                 PendingPriority = Priority
+    # "Thanh toán 300.000 · Trả lại 92.000" mà hóa đơn có dòng 208.000: 300.000 là tiền khách đưa, bỏ đi.
+    Seen = set().union(*Best.values()) if Best else set()
+    for Priority in list(Best):
+        Best[Priority] = {Amount for Amount in Best[Priority]
+                          if not any(0 < Amount - Change in Seen for Change in ChangeAmounts)}
+        if not Best[Priority]:
+            del Best[Priority]
     if not Best:
+        return 0
+    # Chỉ có "Thanh toán X" + tiền thối, không có dòng tiền khách đưa: X có thể là tiền khách đưa → để model đọc kiểm.
+    if max(Best) == 2 and ChangeAmounts and not TenderSeen:
         return 0
     TopAmounts = Best[max(Best)]
     return next(iter(TopAmounts)) if len(TopAmounts) == 1 else 0
@@ -727,6 +753,11 @@ def ParseReceiptFromOcrLines(OcrLines: list, QualityReport: dict, FallbackDate: 
         and PaymentAmountPattern.search(row["text"])
         for row in LogicalRows
     )
+
+    # Máy POS/cân điện tử hay in năm 2 chữ số ("Time: 24/02/21"); chỉ dùng khi không có ngày đủ 4 chữ số.
+    if not ExtractedDate:
+        ShortDate = next((m for row in LogicalRows if (m := ShortDatePattern.search(row["text"]))), None)
+        ExtractedDate = normalize_receipt_date(ShortDate.group(1)) if ShortDate else ""
 
     IsUncertain = bool(
         QualityStatus == "fail"
