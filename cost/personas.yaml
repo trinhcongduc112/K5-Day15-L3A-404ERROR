@@ -13,39 +13,39 @@ users:              # số người dùng thật nếu đưa vào dùng — 3 k�
   low: 30
   base: 100
   high: 300
-  source: "Kịch bản thấp 30 người theo nhóm thử trong spec.md §2; mức cơ sở 100 và cao 300 là (tự ước tính) cho sản phẩm nhật ký chi tiêu cá nhân"
+  source: "30 người theo kịch bản thử spec.md §2; mức 100 (cơ sở) và 300 (cao) là (tự ước tính) cho sản phẩm nhật ký chi tiêu cá nhân"
 
-personas:           # ≥3 kiểu người dùng; share cộng lại = 1
+personas:           # ≥3 kiểu người dùng; share cộng lại = 1 (tỉ lệ từ khảo sát 24 người evidence/survey/results.csv)
   - name: dung_it
-    share: 0.4              # tỉ lệ người dùng kiểu này
-    uses_per_month: 6       # số phiên / người / tháng
+    share: 0.25             # 6/24 người khảo sát chi dưới 10 lượt/tuần
+    uses_per_month: 8       # (tự ước tính) ~2 phiên/tuần (chụp hóa đơn lẻ hoặc tra cứu cuối tuần)
     turns_per_session: 2    # số lượt hỏi trong một phiên
-    source: "(tự ước tính) người ít nhận hóa đơn hoặc chỉ tra cứu lại theo tuần"
+    source: "evidence/survey/results.csv (6/24 người dưới 10 lượt/tuần); số phiên/tháng (tự ước tính)"
   - name: dung_vua
-    share: 0.4
-    uses_per_month: 12
+    share: 0.375            # 9/24 người khảo sát chi 10–20 lượt/tuần
+    uses_per_month: 16      # (tự ước tính) ~4 phiên/tuần (phù hợp giả định 12–16 hóa đơn/tháng ở spec.md §2)
     turns_per_session: 3
-    source: "spec.md §2 giả định 12 hóa đơn/người/tháng, mỗi phiên gồm chụp/xem nhanh/Chốt hoặc tra cứu"
+    source: "evidence/survey/results.csv (9/24 người 10–20 lượt/tuần) + spec.md §2; số phiên/tháng (tự ước tính)"
   - name: dung_nhieu
-    share: 0.2
-    uses_per_month: 25
+    share: 0.375            # 9/24 người khảo sát chi >20 lượt/tuần (4 người 20–35 + 5 người >35)
+    uses_per_month: 30      # (tự ước tính) ~1 phiên/ngày ghi hóa đơn và theo dõi chi tiêu hằng ngày
     turns_per_session: 4
-    source: "(tự ước tính) người ghi hóa đơn hằng ngày và thường xuyên so sánh kỳ"
+    source: "evidence/survey/results.csv (9/24 người >20 lượt/tuần); số phiên/tháng (tự ước tính)"
 # Mỗi lượt hỏi lấy ngẫu nhiên một đầu vào trong eval/benchmark.csv (type thuong và kho).
 # Persona hỏi kiểu riêng: thêm vào persona đó
 #     types: [thuong, kho, tu_choi]
 # hoặc
 #     inputs: ["câu hỏi kiểu 1", "câu hỏi kiểu 2"]
 
-prices:             # USD / 1 triệu token — chép từ further-reading/model-prices.md của repo đề. ≥2 mức model
-  - model: gemini-3.1-flash-lite
-    input: 0.25
-    output: 1.50
-    source: "further-reading/model-prices.md (https://ai.google.dev/gemini-api/docs/pricing, xem 25/11/2026)"
-  - model: gemini-4-hydrogen
-    input: 1.50
-    output: 7.50
-    source: "further-reading/model-prices.md (https://ai.google.dev/gemini-api/docs/pricing, xem 25/11/2026)"
+prices:             # USD / 1 triệu token — ≥2 mức model (có link + ngày xem)
+  - model: gpt-5.4-nano
+    input: 0.20
+    output: 1.25
+    source: "https://openai.com/api/pricing/ (xem 28/11/2026)"
+  - model: gpt-5.4-mini
+    input: 0.75
+    output: 4.50
+    source: "https://openai.com/api/pricing/ (xem 28/11/2026)"
 
 usd_to_vnd:         # tuỳ chọn: điền thì bản tóm tắt in thêm tiền Việt
   rate: 25400
