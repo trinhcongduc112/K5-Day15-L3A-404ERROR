@@ -1332,7 +1332,8 @@ button, input {
   margin-top: 12px;
 }
 
-.sheet-actions-row:has(:only-child) {
+.sheet-actions-row:has(:only-child),
+.sheet-actions-row:has(> .hidden) {
   grid-template-columns: 1fr;
 }
 
@@ -1624,4 +1625,9 @@ button, input {
     padding-bottom: 10px;
     height: 68px;
   }
+}
+
+/* Cần đọc lại: "Tự nhập số tiền" và "Chụp lại" rộng bằng nhau */
+#step-reread .sheet-actions-row:not(:has(> .hidden)) {
+  grid-template-columns: 1fr 1fr;
 }

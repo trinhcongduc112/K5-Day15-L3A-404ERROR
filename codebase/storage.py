@@ -196,10 +196,12 @@ def ConfirmDraftToLedger(payload: dict, ledger: EvaluationLedger | None = None) 
                 if draft:
                     SaveDraftRecords([item for item in drafts if item.get("draft_id") != draft_id], ledger)
                 return row, True
-        if draft is None or not capture_id or not draft.get("printed_total"):
+        manual = bool(draft and draft.get("manual_entry"))
+        if draft is None or not capture_id or not (draft.get("printed_total") or manual):
             raise ValueError("Chưa có bản xem nhanh đủ căn cứ. Hãy chụp lại hóa đơn.")
 
-        total = payload.get("total", draft["printed_total"])
+        # Bản nhập tay: không có số mặc định, người dùng phải tự gõ số thực trả.
+        total = payload.get("total") if manual else payload.get("total", draft["printed_total"])
         if type(total) is not int or total <= 0:
             raise ValueError("Số thực trả phải là số nguyên VND lớn hơn 0.")
         date = datetime.date.fromisoformat(payload.get("date") or draft["date"]).isoformat()
@@ -218,6 +220,9 @@ def ConfirmDraftToLedger(payload: dict, ledger: EvaluationLedger | None = None) 
             "total": total,
             "created_at": now.isoformat(timespec="seconds"),
         }
+        if manual:
+            receipt["items"] = [{"name": receipt["merchant"], "price": total}]
+            receipt["entry"] = "người dùng nhập tay"
         records.append(receipt)
         SaveReceiptRecords(records, ledger)
         SaveDraftRecords([row for row in drafts if row.get("draft_id") != draft_id], ledger)

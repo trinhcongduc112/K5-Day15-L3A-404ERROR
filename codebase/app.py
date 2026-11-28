@@ -241,11 +241,16 @@ def _CreateHttpHandler(TracingModule, AnswerFunction, ChooseCategory, ReadReceip
                 OcrText = "\n".join(row["text"] for row in ScanResult.get("logical_rows", []))
                 ScanResult["category"] = ChooseCategory(OcrText) if readable else "không rõ"
                 ValidationResult, SavedDraft = ReceiptTools.prepare_receipt(ScanResult, image=(ImageRawBytes, extension))
+                # Cần đọc lại: không có bản xem nhanh, nhưng cho phép người dùng tự nhập số thực trả.
+                ManualDraft = None if SavedDraft else ReceiptTools.prepare_manual_receipt(
+                    ScanResult, image=(ImageRawBytes, extension)
+                )
 
                 SelfInstance._SendJsonResponse(
                     200,
                     {
                         "draft": SavedDraft,
+                        "manual_draft": ManualDraft,
                         "validation": ValidationResult,
                         "quality_report": ScanResult.get("quality_report"),
                         "ocr_engine": ScanResult.get("ocr_engine"),

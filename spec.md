@@ -154,4 +154,4 @@ flowchart TD
 
 | Thời điểm | Đổi gì | Vì sao |
 |---|---|---|
-|  |  |  |
+| 28/11/2026 (sau 14:30) | Màn **Cần đọc lại** thêm nút **Tự nhập số tiền**: ảnh vẫn lưu làm bản nháp `manual_entry` không có số tiền; người dùng tự gõ số thực trả, chọn nhóm rồi Chốt; khoản ghi `entry: "người dùng nhập tay"`. AI không đoán số; Chốt thiếu số hoặc số không phải số nguyên dương bị từ chối; chụp lại cùng ảnh vẫn không cộng trùng. (`codebase/app.py`, `tools.py`, `storage.py`, `frontend/`) | Thử hóa đơn **viết tay** lúc demo: số ghi theo nghìn, dòng "Tổng cộng" bỏ trống, số khoanh lệch tổng các dòng → đúng là Cần đọc lại, nhưng người dùng chỉ có nút "Chụp lại" và không ghi được khoản chi. `check_flow.py` vẫn đạt cả 3 ca. |

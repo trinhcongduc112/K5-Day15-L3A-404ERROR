@@ -623,6 +623,9 @@
         || "Ảnh bị mờ hoặc chưa xác định rõ số tiền thực trả (G10).";
       $("reread-reason").textContent = reason + " Chưa ghi khoản chi, tổng chi tiêu trong sổ được giữ nguyên.";
       $("reread-preview").src = state.currentImageDataUrl;
+      // Ảnh không chắc số tiền: AI không đoán, cho người dùng tự gõ số thực trả (ảnh vẫn được lưu kèm).
+      state.manualDraft = scanData?.manual_draft || null;
+      $("btn-manual-reread").classList.toggle("hidden", !state.manualDraft);
       showSheetStep("reread");
       return;
     }
@@ -653,6 +656,24 @@
 
     populateDraftForm(state.currentDraft, missingDate);
     showSheetStep("draft");
+  }
+
+  function openManualDraft() {
+    const draft = state.manualDraft;
+    if (!draft) return;
+    const isCaptureDate = draft.date_source !== "hóa đơn";
+    state.currentDraft = {
+      ...draft,
+      total: 0,
+      date_source: isCaptureDate ? "Ngày chụp mặc định" : "Từ hóa đơn",
+      image_data_url: state.currentImageDataUrl,
+    };
+    populateDraftForm(state.currentDraft, isCaptureDate);
+    $("draft-total-input").value = "";
+    $("draft-total-input").placeholder = "Nhập số tiền thực trả";
+    $("draft-items-summary").textContent = "Tự nhập · AI chưa đọc chắc số tiền";
+    showSheetStep("draft");
+    $("draft-total-input").focus();
   }
 
   function populateDraftForm(draft, isDefaultDate) {
@@ -1006,6 +1027,7 @@
 
     $("btn-run-ocr").addEventListener("click", () => runOcrAndCreateDraft("auto"));
     $("btn-retake-reread").addEventListener("click", () => showSheetStep("camera"));
+    $("btn-manual-reread").addEventListener("click", openManualDraft);
     $("btn-retake-from-draft").addEventListener("click", () => showSheetStep("camera"));
     $("btn-discard-draft").addEventListener("click", closeCaptureSheet);
     $("step-draft").addEventListener("submit", confirmChot);

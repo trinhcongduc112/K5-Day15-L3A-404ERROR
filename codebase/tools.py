@@ -190,6 +190,7 @@ def draft_save_receipt(ReceiptPayload: dict, ledger: StorageModule.EvaluationLed
         "printed_total": int(round(float(ReceiptPayload.get("printed_total") or 0))),
         "ocr_engine": str(ReceiptPayload.get("ocr_engine") or ""),
         "quality_score": QualityReport.get("overall_score"),
+        "manual_entry": bool(ReceiptPayload.get("manual_entry")),
         "created_at": datetime.datetime.now().isoformat(timespec="seconds"),
     }
     StorageModule.UpsertDraftRecord(DraftRecord, ledger)
@@ -207,6 +208,20 @@ def prepare_receipt(payload: dict, ledger: StorageModule.EvaluationLedger | None
         path = StorageModule.SaveReceiptImage(image_bytes, extension, payload["date"], image_id)
         payload = {**payload, "image_path": path}
     return validation, draft_save_receipt(payload, ledger)
+
+
+def prepare_manual_receipt(payload: dict, ledger: StorageModule.EvaluationLedger | None = None, *, image: tuple | None = None):
+    """Ảnh không chắc số thực trả (Cần đọc lại): lưu ảnh và bản nháp không có số tiền.
+    AI không đoán số; người dùng tự gõ số thực trả rồi mới Chốt được."""
+    if payload.get("blocked") or not payload.get("capture_id") or not normalize_receipt_date(str(payload.get("date") or "")):
+        return None
+    if image is not None:
+        image_bytes, extension = image
+        path = StorageModule.SaveReceiptImage(image_bytes, extension, payload["date"], hashlib.sha256(image_bytes).hexdigest())
+        payload = {**payload, "image_path": path}
+    return draft_save_receipt(
+        {**payload, "printed_total": 0, "items": [], "category": "không rõ", "manual_entry": True}, ledger
+    )
 
 
 @tool
